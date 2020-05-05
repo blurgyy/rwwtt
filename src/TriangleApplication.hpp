@@ -8,10 +8,12 @@ class TriangleApplication
 private:
     GLFWwindow *window;
     VkInstance instance;
+    VkPhysicalDevice physicalDevice;
 
     void initWindow();
     void initVulkan();
     void createInstance();
+    void pickPhysicalDevice();
     void mainLoop();
     void cleanup();
 

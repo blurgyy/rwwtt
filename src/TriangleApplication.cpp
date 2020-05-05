@@ -46,6 +46,22 @@ bool checkValidationLayerSupport()
     return allFound;
 }
 
+int rateDevice(VkPhysicalDevice device){
+    VkPhysicalDeviceProperties deviceProperties;
+    VkPhysicalDeviceFeatures deviceFeats;
+    vkGetPhysicalDeviceProperties(device, &deviceProperties);
+    vkGetPhysicalDeviceFeatures(device, &deviceFeats);
+
+    if(!deviceFeats.geometryShader){
+        return 0;
+    }
+
+    int ret = 0;
+    ret += deviceProperties.deviceType * 1000;
+    ret += deviceProperties.limits.maxImageDimension2D;
+    return ret;
+}
+
 /* private functions */
 
 void TriangleApplication::initWindow(){
@@ -58,6 +74,7 @@ void TriangleApplication::initWindow(){
 
 void TriangleApplication::initVulkan(){
     createInstance();
+    pickPhysicalDevice();
 }
 
 void TriangleApplication::createInstance(){
@@ -107,6 +124,29 @@ void TriangleApplication::createInstance(){
     printf("* total supported extensions: [ %lu ]\n", vkExtensions.size());
     for(const auto& ext : vkExtensions){
         printf("* supported: %s\n", ext.extensionName);
+    }
+}
+
+void TriangleApplication::pickPhysicalDevice(){
+    uint32_t deviceCount = 0;
+    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+    if(deviceCount == 0){
+        throw std::runtime_error("** failed to discover GPUs with vulkan");
+    }
+    std::vector<VkPhysicalDevice> devices(deviceCount);
+    if(vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data()) != VK_SUCCESS){
+        throw std::runtime_error("** device discovered but failed to get devices");
+    }
+    int maxScore = -1;
+    for(const auto& device : devices){
+        int score = rateDevice(device);
+        if(score > maxScore){
+            maxScore = score;
+            physicalDevice = device;
+        }
+    }
+    if(physicalDevice == VK_NULL_HANDLE){
+        throw std::runtime_error("** failed to find a suitable GPU");
     }
 }
 
