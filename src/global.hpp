@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <cstring>
+#include <optional>
 
 const uint32_t window_width = 1024;
 const uint32_t window_height = 768;
@@ -20,6 +21,29 @@ const std::vector<const char*> validationLayers{
 #else
     const bool enableValidationLayers = true;
 #endif
+
+struct QueueFamilyIndices{
+    std::optional<uint32_t> graphicsFamily;
+    bool isComplete(){
+        return graphicsFamily.has_value();
+    }
+};
+
+inline QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device){
+    QueueFamilyIndices ret;
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+    int i = 0;
+    for(const auto& queueFamily: queueFamilies){
+        if(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT){
+            ret.graphicsFamily = i;
+        }
+        ++ i;
+    }
+    return ret;
+}
 
 inline bool checkValidationLayerSupport()
 {
@@ -49,6 +73,11 @@ inline bool checkValidationLayerSupport()
     }
 
     return allFound;
+}
+
+inline bool isDeviceSuitable(VkPhysicalDevice device){
+    QueueFamilyIndices indices = findQueueFamilies(device);
+    return indices.isComplete();
 }
 
 inline int rateDevice(VkPhysicalDevice device){

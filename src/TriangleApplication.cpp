@@ -78,11 +78,16 @@ void TriangleApplication::pickPhysicalDevice(){
     if(vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data()) != VK_SUCCESS){
         throw std::runtime_error("** device discovered but failed to get devices");
     }
-    int maxScore = -1;
+    // int maxScore = -1;
+    // for(const auto& device : devices){
+    //     int score = rateDevice(device);
+    //     if(score > maxScore){
+    //         maxScore = score;
+    //         physicalDevice = device;
+    //     }
+    // }
     for(const auto& device : devices){
-        int score = rateDevice(device);
-        if(score > maxScore){
-            maxScore = score;
+        if(isDeviceSuitable(device)){
             physicalDevice = device;
         }
     }
