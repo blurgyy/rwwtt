@@ -1,2 +1,5 @@
 # cmake outputs
 build/
+
+# vscode
+.vscode/
