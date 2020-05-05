@@ -7,9 +7,11 @@ class TriangleApplication
 {
 private:
     GLFWwindow *window;
+    VkInstance instance;
 
     void initWindow();
-    void initVulkan() {}
+    void initVulkan();
+    void createInstance();
     void mainLoop();
     void cleanup();
 
