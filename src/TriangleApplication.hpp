@@ -3,6 +3,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <global.hpp>
+
 class TriangleApplication
 {
 private:

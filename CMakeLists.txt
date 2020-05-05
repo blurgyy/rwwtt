@@ -8,4 +8,5 @@ add_subdirectory(src)
 target_link_libraries(
     vulkanTest
     PRIVATE TriangleApplication
+    PRIVATE Global
     )
