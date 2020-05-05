@@ -1,7 +1,12 @@
+#pragma once
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 #include <vulkan/vulkan.h>
+
+#include <vector>
+#include <cstring>
 
 const uint32_t window_width = 1024;
 const uint32_t window_height = 768;
@@ -16,7 +21,7 @@ const std::vector<const char*> validationLayers{
     const bool enableValidationLayers = true;
 #endif
 
-bool checkValidationLayerSupport()
+inline bool checkValidationLayerSupport()
 {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -46,7 +51,7 @@ bool checkValidationLayerSupport()
     return allFound;
 }
 
-int rateDevice(VkPhysicalDevice device){
+inline int rateDevice(VkPhysicalDevice device){
     VkPhysicalDeviceProperties deviceProperties;
     VkPhysicalDeviceFeatures deviceFeats;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
