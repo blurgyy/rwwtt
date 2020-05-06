@@ -15,6 +15,7 @@ void TriangleApplication::initWindow(){
 
 void TriangleApplication::initVulkan(){
     createInstance();
+    createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
 }
@@ -66,6 +67,12 @@ void TriangleApplication::createInstance(){
     printf("* total supported extensions: [ %lu ]\n", vkExtensions.size());
     for(const auto& ext : vkExtensions){
         printf("* supported: %s\n", ext.extensionName);
+    }
+}
+
+void TriangleApplication::createSurface(){
+    if(glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS){
+        throw std::runtime_error("** failed to create window surface");
     }
 }
 
@@ -138,6 +145,7 @@ void TriangleApplication::mainLoop(){
 
 void TriangleApplication::cleanup(){
     vkDestroyDevice(device, nullptr);
+    vkDestroySurfaceKHR(instance, surface, nullptr); // destroy surface before destroying instance
     vkDestroyInstance(instance, nullptr);
 
     glfwDestroyWindow(window);
