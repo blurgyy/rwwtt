@@ -60,13 +60,13 @@ void TriangleApplication::createInstance(){
         throw std::runtime_error("** failed to create instance");
     }
 
-    uint32_t vkExtensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &vkExtensionCount, nullptr);
+    uint32_t ExtensionCount = 0;
+    vkEnumerateInstanceExtensionProperties(nullptr, &ExtensionCount, nullptr);
 
-    std::vector<VkExtensionProperties> vkExtensions(vkExtensionCount);
-    vkEnumerateInstanceExtensionProperties(nullptr, &vkExtensionCount, vkExtensions.data());
-    printf("* total supported extensions: [ %lu ]\n", vkExtensions.size());
-    for(const auto& ext : vkExtensions){
+    std::vector<VkExtensionProperties> availableExtensions(ExtensionCount);
+    vkEnumerateInstanceExtensionProperties(nullptr, &ExtensionCount, availableExtensions.data());
+    printf("* total supported extensions: [ %lu ]\n", availableExtensions.size());
+    for(const auto& ext : availableExtensions){
         printf("* supported: %s\n", ext.extensionName);
     }
 }
@@ -96,6 +96,9 @@ void TriangleApplication::pickPhysicalDevice(){
     //     }
     // }
     for(const auto& device : devices){
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+        printf("Device name: %s\n", deviceProperties.deviceName);
         if(isDeviceSuitable(device)){
             physicalDevice = device;
         }
@@ -128,7 +131,10 @@ void TriangleApplication::createLogicalDevice(){
     createInfo.queueCreateInfoCount = queueCreateInfos.size();
     createInfo.pEnabledFeatures = &deviceFeatures;
 
-    createInfo.enabledExtensionCount = 0;
+    // createInfo.enabledExtensionCount = 0;
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+    
     if(enableValidationLayers){
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -170,7 +176,25 @@ QueueFamilyIndices TriangleApplication::findQueueFamilies(VkPhysicalDevice devic
 
 bool TriangleApplication::isDeviceSuitable(VkPhysicalDevice device){
     QueueFamilyIndices indices = findQueueFamilies(device);
-    return indices.isComplete();
+    // bool extensionSupported = checkDeviceExtensionSupport(device);
+    bool extensionSupported = true;
+    printf("ext support: %s\n", extensionSupported ? "yes" : "no");
+    return indices.isComplete() && extensionSupported;
+}
+
+bool TriangleApplication::checkDeviceExtensionSupport(VkPhysicalDevice device){
+    uint32_t ExtensionCount = 0;
+    vkEnumerateInstanceExtensionProperties(nullptr, &ExtensionCount, nullptr);
+    std::vector<VkExtensionProperties> availableExtensions(ExtensionCount);
+    vkEnumerateInstanceExtensionProperties(nullptr, &ExtensionCount, availableExtensions.data());
+
+    std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+    for(const auto& ext : availableExtensions){
+        requiredExtensions.erase(ext.extensionName);
+    }
+
+    return requiredExtensions.empty();
 }
 
 void TriangleApplication::mainLoop(){

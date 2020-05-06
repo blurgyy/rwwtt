@@ -16,6 +16,9 @@ const uint32_t window_height = 768;
 const std::vector<const char*> validationLayers{
     "VK_LAYER_KHRONOS_validation"
 };
+const std::vector<const char*> deviceExtensions{
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
 
 #ifdef NDEBUG
     const bool enableValidationLayers = false;
@@ -36,6 +39,12 @@ struct QueueFamilyIndices{
         return graphicsFamily.has_value()
             && presentFamily.has_value();
     }
+};
+
+struct SwapChainSupportDetails{
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
 };
 
 inline bool checkValidationLayerSupport()

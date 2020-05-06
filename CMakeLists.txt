@@ -6,7 +6,11 @@ add_executable(vulkanTest main.cpp)
 
 add_subdirectory(src)
 
+add_library( amdvlk SHARED IMPORTED GLOBAL )
+set_target_properties(amdvlk PROPERTIES IMPORTED_LOCATION "/usr/lib/x86_64-linux-gnu/amdvlk64.so")
+
 target_link_libraries(
     vulkanTest
-    PRIVATE TriangleApplication
+    TriangleApplication
+    # amdvlk
     )

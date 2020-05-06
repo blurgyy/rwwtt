@@ -14,8 +14,8 @@ private:
     VkInstance instance;
     VkSurfaceKHR surface;
 
-    VkPhysicalDevice physicalDevice;
-    VkDevice device;
+    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    VkDevice device = VK_NULL_HANDLE;
 
     VkQueue graphicsQueue;
     VkQueue presentQueue;
@@ -31,6 +31,7 @@ private:
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
     bool isDeviceSuitable(VkPhysicalDevice device);
+    bool checkDeviceExtensionSupport(VkPhysicalDevice device);
     void mainLoop();
     void cleanup();
 

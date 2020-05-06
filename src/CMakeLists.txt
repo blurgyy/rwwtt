@@ -16,6 +16,7 @@ pkg_search_module(GLFW REQUIRED glfw3)
 
 target_include_directories(TriangleApplication PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Global PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 target_link_libraries(
     Global
     ${GLFW_STATIC_LIBRARIES}
