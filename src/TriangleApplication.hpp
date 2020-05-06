@@ -13,11 +13,14 @@ private:
     GLFWwindow *window;
     VkInstance instance;
     VkPhysicalDevice physicalDevice;
+    VkDevice device;
+    VkQueue graphicsQueue;
 
     void initWindow();
     void initVulkan();
     void createInstance();
     void pickPhysicalDevice();
+    void createLogicalDevice();
     void mainLoop();
     void cleanup();
 
