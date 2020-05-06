@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <vector>
 #include <cstring>
+#include <set>
 
 /* private functions */
 
@@ -107,18 +108,24 @@ void TriangleApplication::pickPhysicalDevice(){
 void TriangleApplication::createLogicalDevice(){
     QueueFamilyIndices indecies = findQueueFamilies(physicalDevice);
 
-    VkDeviceQueueCreateInfo queueCreateInfo{};
-    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo.queueFamilyIndex = indecies.graphicsFamily.value();
-    queueCreateInfo.queueCount = 1;
+    // VkDeviceQueueCreateInfo queueCreateInfo{};
+    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+    std::set<uint32_t> uniqueQueueFamilies = indecies.getUniqueSet();
     float queuePriority = 1.f;
-    queueCreateInfo.pQueuePriorities = &queuePriority;
+    for(const uint32_t& queueFamily : uniqueQueueFamilies){
+        VkDeviceQueueCreateInfo queueCreateInfo{};
+        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = queueFamily;
+        queueCreateInfo.queueCount = 1;
+        queueCreateInfo.pQueuePriorities = &queuePriority;
+        queueCreateInfos.push_back(queueCreateInfo);
+    }
 
     VkPhysicalDeviceFeatures deviceFeatures{};
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pQueueCreateInfos = &queueCreateInfo;
-    createInfo.queueCreateInfoCount = 1;
+    createInfo.pQueueCreateInfos = queueCreateInfos.data();
+    createInfo.queueCreateInfoCount = queueCreateInfos.size();
     createInfo.pEnabledFeatures = &deviceFeatures;
 
     createInfo.enabledExtensionCount = 0;
@@ -134,6 +141,7 @@ void TriangleApplication::createLogicalDevice(){
     }
 
     vkGetDeviceQueue(device, indecies.graphicsFamily.value(), 0, &graphicsQueue);
+    vkGetDeviceQueue(device, indecies.presentFamily.value(), 0, &presentQueue);
 }
 
 QueueFamilyIndices TriangleApplication::findQueueFamilies(VkPhysicalDevice device){

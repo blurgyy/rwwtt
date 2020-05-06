@@ -12,10 +12,13 @@ class TriangleApplication
 private:
     GLFWwindow *window;
     VkInstance instance;
+    VkSurfaceKHR surface;
+
     VkPhysicalDevice physicalDevice;
     VkDevice device;
+
     VkQueue graphicsQueue;
-    VkSurfaceKHR surface;
+    VkQueue presentQueue;
 
     void initWindow();
     void initVulkan();

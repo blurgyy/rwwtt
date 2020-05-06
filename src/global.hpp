@@ -5,6 +5,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include <set>
 #include <vector>
 #include <cstring>
 #include <optional>
@@ -25,6 +26,12 @@ const std::vector<const char*> validationLayers{
 struct QueueFamilyIndices{
     std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> presentFamily;
+    std::set<uint32_t> getUniqueSet(){
+        if(!isComplete()){
+            throw std::runtime_error("** QueueFamilyIndices not complete");
+        }
+        return std::set<uint32_t>{graphicsFamily.value(), presentFamily.value()};
+    }
     bool isComplete(){
         return graphicsFamily.has_value()
             && presentFamily.has_value();
