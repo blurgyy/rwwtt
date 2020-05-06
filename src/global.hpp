@@ -9,6 +9,7 @@
 #include <vector>
 #include <cstring>
 #include <optional>
+#include <algorithm>
 
 const uint32_t window_width = 1024;
 const uint32_t window_height = 768;
@@ -114,4 +115,17 @@ inline int rateDevice(VkPhysicalDevice device){
     ret += deviceProperties.deviceType * 1000;
     ret += deviceProperties.limits.maxImageDimension2D;
     return ret;
+}
+
+template<class T>
+inline T clamp(const T& value, const T& minvalue, const T& maxvalue){
+    if(minvalue > maxvalue){
+        throw std::runtime_error("** minvalue < maxvalue in global::clamp()");
+    }
+    return std::max<T>(
+        minvalue,
+        std::min<T>(
+            maxvalue, value
+        )
+    );
 }
