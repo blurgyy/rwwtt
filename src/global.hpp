@@ -10,6 +10,7 @@
 #include <cstring>
 #include <optional>
 #include <algorithm>
+#include <fstream>
 
 const uint32_t window_width = 1024;
 const uint32_t window_height = 768;
@@ -115,6 +116,19 @@ inline int rateDevice(VkPhysicalDevice device){
     ret += deviceProperties.deviceType * 1000;
     ret += deviceProperties.limits.maxImageDimension2D;
     return ret;
+}
+
+inline std::vector<char> readFile(const std::string& filename){
+    std::ifstream file(filename, std::ios::ate | std::ios::binary);
+    if(!file.is_open()){
+        throw std::runtime_error("** failed to open file");
+    }
+    size_t fileSize = static_cast<size_t>(file.tellg());
+    std::vector<char> buffer(fileSize);
+    file.seekg(0);
+    file.read(buffer.data(), fileSize);
+    file.close();
+    return buffer;
 }
 
 template<class T>

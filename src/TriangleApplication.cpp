@@ -23,6 +23,7 @@ void TriangleApplication::initVulkan(){
     createLogicalDevice();
     createSwapChain();
     createImageViews();
+    createGraphicsPipeline();
 }
 
 void TriangleApplication::createInstance(){
@@ -260,6 +261,11 @@ void TriangleApplication::createImageViews(){
             throw std::runtime_error("** failed to create image views");
         }
     }
+}
+
+void TriangleApplication::createGraphicsPipeline(){
+    auto vertexShaderCode = readFile("../shaders/vert.spv");
+    auto fragShaderCode = readFile("../shaders/frag.spv");
 }
 
 QueueFamilyIndices TriangleApplication::findQueueFamilies(VkPhysicalDevice device){
