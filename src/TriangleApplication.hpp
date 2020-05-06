@@ -25,6 +25,9 @@ private:
     void createLogicalDevice();
     void createSurface();
 
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+
+    bool isDeviceSuitable(VkPhysicalDevice device);
     void mainLoop();
     void cleanup();
 

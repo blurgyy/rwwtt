@@ -136,6 +136,35 @@ void TriangleApplication::createLogicalDevice(){
     vkGetDeviceQueue(device, indecies.graphicsFamily.value(), 0, &graphicsQueue);
 }
 
+QueueFamilyIndices TriangleApplication::findQueueFamilies(VkPhysicalDevice device){
+    QueueFamilyIndices ret;
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+    // int i = 0;
+    // for(const auto& queueFamily: queueFamilies){
+    for(int i = 0; i < queueFamilies.size() && !ret.isComplete(); ++ i){
+        VkQueueFamilyProperties& queueFamily = queueFamilies[i];
+        if(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT){
+            ret.graphicsFamily = i;
+        }
+        
+        VkBool32 presentSupport = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+
+        if(presentSupport){
+            ret.presentFamily = i;
+        }
+    }
+    return ret;
+}
+
+bool TriangleApplication::isDeviceSuitable(VkPhysicalDevice device){
+    QueueFamilyIndices indices = findQueueFamilies(device);
+    return indices.isComplete();
+}
+
 void TriangleApplication::mainLoop(){
     while (!glfwWindowShouldClose(window))
     {
