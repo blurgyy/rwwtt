@@ -86,7 +86,7 @@ void TriangleApplication::setupDebugMessenger(){
     }
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(createInfo);
-    if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+    if(CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS){
         throw std::runtime_error("** failed to set up debug messenger");
     }
 }
@@ -130,6 +130,7 @@ void TriangleApplication::pickPhysicalDevice(){
         printf("Device name: %s\n", deviceProperties.deviceName);
         if(isDeviceSuitable(device)){
             physicalDevice = device;
+            // break;
         }
     }
     if(physicalDevice == VK_NULL_HANDLE){
@@ -203,12 +204,40 @@ QueueFamilyIndices TriangleApplication::findQueueFamilies(VkPhysicalDevice devic
     return ret;
 }
 
+SwapChainSupportDetails TriangleApplication::querySwapChainSupport(VkPhysicalDevice device){
+    SwapChainSupportDetails details;
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+
+    uint32_t formatCount;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+
+    if(formatCount != 0){
+        details.formats.resize(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+    }
+
+    uint32_t presentModeCount;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
+
+    if(presentModeCount != 0){
+        details.presentModes.resize(presentModeCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
+    }
+
+    return details;
+}
+
 bool TriangleApplication::isDeviceSuitable(VkPhysicalDevice device){
     QueueFamilyIndices indices = findQueueFamilies(device);
     // bool extensionSupported = checkDeviceExtensionSupport(device);
     bool extensionSupported = true;
+    bool swapChainAdequate = false;
+    if(extensionSupported){
+        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+        swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+    }
     // printf("ext support: %s\n", extensionSupported ? "yes" : "no");
-    return indices.isComplete() && extensionSupported;
+    return indices.isComplete() && extensionSupported && swapChainAdequate;
 }
 
 bool TriangleApplication::checkDeviceExtensionSupport(VkPhysicalDevice device){
