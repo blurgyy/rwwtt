@@ -3,3 +3,6 @@ build/
 
 # vscode
 .vscode/
+
+# SPIR-V (compiled GLSL)
+*.spv
