@@ -266,6 +266,11 @@ void TriangleApplication::createImageViews(){
 void TriangleApplication::createGraphicsPipeline(){
     auto vertexShaderCode = readFile("../shaders/vert.spv");
     auto fragShaderCode = readFile("../shaders/frag.spv");
+    VkShaderModule vertShaderModule = createShaderModule(vertexShaderCode);
+    VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+
+    vkDestroyShaderModule(device, vertShaderModule, nullptr);
+    vkDestroyShaderModule(device, fragShaderModule, nullptr);
 }
 
 QueueFamilyIndices TriangleApplication::findQueueFamilies(VkPhysicalDevice device){
@@ -351,6 +356,18 @@ VkExtent2D TriangleApplication::chooseSwapExtent(const VkSurfaceCapabilitiesKHR&
         );
         return actualExtent;
     }
+}
+
+VkShaderModule TriangleApplication::createShaderModule(const std::vector<char>& code){
+    VkShaderModuleCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = code.size();
+    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+    VkShaderModule shaderModule;
+    if(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS){
+        throw std::runtime_error("** failed to create shader module with code supplied");
+    }
+    return shaderModule;
 }
 
 bool TriangleApplication::isDeviceSuitable(VkPhysicalDevice device){
