@@ -8,10 +8,16 @@
 
 #include <iostream>
 
+// ccw
 const std::vector<Vertex> vertices = {
-    {{0.f, -0.5f}, {1.f, 0.f, 0.f}},
-    {{-0.5f, 0.5f}, {0.f, 1.f, 1.f}},
-    {{0.5f, 0.5f}, {0.f, 0.f, 1.f}}
+    {{-0.5f, -0.5f}, {1.f, 1.f, 0.f}},
+    {{-0.5f, 0.5f}, {0.f, 0.f, 1.f}},
+    {{0.5f, 0.5f}, {0.f, 1.f, 1.f}},
+    {{0.5f, -0.5f}, {1.f, 0.f, 0.f}}
+};
+
+const std::vector<uint32_t> indices = {
+    0, 1, 2, 2, 3, 0
 };
 
 class TriangleApplication
@@ -30,6 +36,8 @@ private:
 
     VkBuffer vertexBuffer = VK_NULL_HANDLE; // handle to hold the vertex buffer
     VkDeviceMemory vertexBufferMemory; // handle to hold the memory used for storing vertex data
+    VkBuffer indexBuffer;
+    VkDeviceMemory indexBufferMemory;
 
     std::vector<VkImage> swapChainImages;
     std::vector<VkImageView> swapChainImageViews;
@@ -85,6 +93,7 @@ private:
     void createFramebuffers();
     void createCommandPool();
     void createVertexBuffer();
+    void createIndexBuffer();
     void createCommandBuffers();
     void createSyncObjects();
 
