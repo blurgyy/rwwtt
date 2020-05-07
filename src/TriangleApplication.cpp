@@ -27,6 +27,7 @@ void TriangleApplication::initVulkan(){
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPool();
+    createSemaphores();
 }
 
 void TriangleApplication::createInstance(){
@@ -523,6 +524,15 @@ void TriangleApplication::createCommandBuffers(){
     }
 }
 
+void TriangleApplication::createSemaphores(){
+    VkSemaphoreCreateInfo semaphoreInfo{};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS || 
+        vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS){
+        throw std::runtime_error("** failed to create semaphores");
+    }
+}
+
 QueueFamilyIndices TriangleApplication::findQueueFamilies(VkPhysicalDevice device){
     QueueFamilyIndices ret;
     uint32_t queueFamilyCount = 0;
@@ -663,10 +673,18 @@ void TriangleApplication::mainLoop(){
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
+        drawFrame();
     }
+    vkDeviceWaitIdle(device);
+}
+
+void TriangleApplication::drawFrame(){
+    
 }
 
 void TriangleApplication::cleanup(){
+    vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
+    vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
     vkDestroyCommandPool(device, commandPool, nullptr);
     for(auto framebuffer : swapChainFramebuffers){
         vkDestroyFramebuffer(device, framebuffer, nullptr);
