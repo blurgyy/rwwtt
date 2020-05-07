@@ -1,9 +1,9 @@
-
 #include <iostream>
 #include <exception>
 #include <cstdlib>
 
 #include <TriangleApplication.hpp>
+#include <global.hpp>
 
 int main(){
     TriangleApplication app;

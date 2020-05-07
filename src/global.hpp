@@ -2,6 +2,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include <vulkan/vulkan.h>
 
@@ -29,6 +30,16 @@ const std::vector<const char*> deviceExtensions{
 #else
     const bool enableValidationLayers = true;
 #endif
+
+struct Vertex{
+    glm::vec2 pos;
+    glm::vec3 color;
+    static VkVertexInputBindingDescription getBindingDescription(){
+        VkVertexInputBindingDescription bindingDescription{};
+
+        return bindingDescription;
+    }
+};
 
 struct QueueFamilyIndices{
     std::optional<uint32_t> graphicsFamily;
