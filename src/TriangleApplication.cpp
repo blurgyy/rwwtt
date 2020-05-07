@@ -10,9 +10,10 @@
 void TriangleApplication::initWindow(){
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
+    // glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     window = glfwCreateWindow(window_width, window_height, "vulkanTest", nullptr, nullptr);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
 
 void TriangleApplication::initVulkan(){
@@ -557,6 +558,18 @@ void TriangleApplication::createSyncObjects(){
     }
 }
 
+void TriangleApplication::recreateSwapChain(){
+    vkDeviceWaitIdle(device);
+    cleanupSwapChain();
+
+    createSwapChain();
+    createImageViews();
+    createRenderPass();
+    createGraphicsPipeline();
+    createFramebuffers();
+    createCommandBuffers();
+}
+
 QueueFamilyIndices TriangleApplication::findQueueFamilies(VkPhysicalDevice device){
     QueueFamilyIndices ret;
     uint32_t queueFamilyCount = 0;
@@ -626,7 +639,13 @@ VkExtent2D TriangleApplication::chooseSwapExtent(const VkSurfaceCapabilitiesKHR&
     if(capabilities.currentExtent.width != UINT32_MAX){
         return capabilities.currentExtent;
     } else {
-        VkExtent2D actualExtent = {window_width, window_height};
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+
+        VkExtent2D actualExtent = {
+            static_cast<uint32_t>(width),
+            static_cast<uint32_t>(height)
+        };
 
         actualExtent.width = clamp<uint32_t>(
             actualExtent.width,
@@ -707,7 +726,13 @@ void TriangleApplication::drawFrame(){
 
     uint32_t imageIndex;
     // printf("frame\n");
-    vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+    if(result == VK_ERROR_OUT_OF_DATE_KHR){
+        recreateSwapChain();
+        return; // !!!
+    } else if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR){
+        throw std::runtime_error("** failed to ACQUIRE swap chain image");
+    }
 
     if(imagesInFlight[imageIndex] != VK_NULL_HANDLE){
         vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
@@ -742,32 +767,47 @@ void TriangleApplication::drawFrame(){
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    vkQueuePresentKHR(presentQueue, &presentInfo);
+    result = vkQueuePresentKHR(presentQueue, &presentInfo);
+    if(result == VK_ERROR_OUT_OF_DATE_KHR ||
+        result == VK_SUBOPTIMAL_KHR ||
+        framebufferResized)
+    {
+        framebufferResized = false;
+        recreateSwapChain();
+    } else if(result != VK_SUCCESS){
+        throw std::runtime_error("** failed to PRESENT swap chain image");
+    }
+
     vkQueueWaitIdle(presentQueue);
 
     currentFrame = (currentFrame + 1) % max_frames_in_flight;
 }
 
+void TriangleApplication::cleanupSwapChain(){
+    for(auto framebuffer : swapChainFramebuffers){
+        vkDestroyFramebuffer(device, framebuffer, nullptr);
+    }
+    vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+    vkDestroyPipeline(device, graphicsPipeline, nullptr);
+    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    vkDestroyRenderPass(device, renderPass, nullptr);
+    for(auto imageView : swapChainImageViews){
+        vkDestroyImageView(device, imageView, nullptr);
+    }
+    vkDestroySwapchainKHR(device, swapChain, nullptr);
+}
+
 void TriangleApplication::cleanup(){
+    cleanupSwapChain();
     for(size_t i = 0; i < max_frames_in_flight; ++ i){
         vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
         vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
         vkDestroyFence(device, inFlightFences[i], nullptr);
     }
     vkDestroyCommandPool(device, commandPool, nullptr);
-    for(auto framebuffer : swapChainFramebuffers){
-        vkDestroyFramebuffer(device, framebuffer, nullptr);
-    }
-    vkDestroyPipeline(device, graphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-    vkDestroyRenderPass(device, renderPass, nullptr);
     if(enableValidationLayers){
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
     }
-    for(auto imageView : swapChainImageViews){
-        vkDestroyImageView(device, imageView, nullptr);
-    }
-    vkDestroySwapchainKHR(device, swapChain, nullptr);
     vkDestroyDevice(device, nullptr);
     vkDestroySurfaceKHR(instance, surface, nullptr); // destroy surface before destroying instance
     vkDestroyInstance(instance, nullptr);

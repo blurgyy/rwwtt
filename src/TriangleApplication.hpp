@@ -34,6 +34,8 @@ private:
     std::vector<VkFence> imagesInFlight;
     size_t currentFrame = 0;
 
+    bool framebufferResized = false;
+
     VkDebugUtilsMessengerEXT debugMessenger;
 
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -51,6 +53,11 @@ private:
         std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
         return VK_FALSE;
+    }
+
+    static void framebufferResizeCallback(GLFWwindow *window, int width, int height){
+        auto app = reinterpret_cast<TriangleApplication*>(glfwGetWindowUserPointer(window));
+        app->framebufferResized = true;
     }
 
     void initWindow();
@@ -71,6 +78,8 @@ private:
     void createCommandBuffers();
     void createSyncObjects();
 
+    void recreateSwapChain();
+
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
@@ -84,6 +93,7 @@ private:
 
     void mainLoop();
     void drawFrame();
+    void cleanupSwapChain();
     void cleanup();
 
 public:
