@@ -25,6 +25,7 @@ void TriangleApplication::initVulkan(){
     createImageViews();
     createRenderPass();
     createGraphicsPipeline();
+    createFramebuffers();
 }
 
 void TriangleApplication::createInstance(){
@@ -448,6 +449,28 @@ void TriangleApplication::createGraphicsPipeline(){
     vkDestroyShaderModule(device, fragShaderModule, nullptr);
 }
 
+void TriangleApplication::createFramebuffers(){
+    swapChainFramebuffers.resize(swapChainImageViews.size());
+    for(size_t i = 0; i < swapChainFramebuffers.size(); ++ i){
+        VkImageView attachments[] = {
+            swapChainImageViews[i]
+        };
+
+        VkFramebufferCreateInfo framebufferInfo{};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = renderPass;
+        framebufferInfo.attachmentCount = 1;
+        framebufferInfo.pAttachments = attachments;
+        framebufferInfo.width = swapChainExtent.width;
+        framebufferInfo.height = swapChainExtent.height;
+        framebufferInfo.layers = 1;
+
+        if(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS){
+            throw std::runtime_error("** failed to create frame buffer");
+        }
+    }
+}
+
 QueueFamilyIndices TriangleApplication::findQueueFamilies(VkPhysicalDevice device){
     QueueFamilyIndices ret;
     uint32_t queueFamilyCount = 0;
@@ -592,6 +615,9 @@ void TriangleApplication::mainLoop(){
 }
 
 void TriangleApplication::cleanup(){
+    for(auto framebuffer : swapChainFramebuffers){
+        vkDestroyFramebuffer(device, framebuffer, nullptr);
+    }
     vkDestroyPipeline(device, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyRenderPass(device, renderPass, nullptr);
