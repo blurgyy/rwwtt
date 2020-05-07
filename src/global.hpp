@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <fstream>
 
+const int max_frames_in_flight = 2;
+
 const uint32_t window_width = 1024;
 const uint32_t window_height = 768;
 
