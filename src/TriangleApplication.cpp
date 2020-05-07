@@ -559,6 +559,15 @@ void TriangleApplication::createSyncObjects(){
 }
 
 void TriangleApplication::recreateSwapChain(){
+    // pause when window is minimized
+    // seems KDE plasma does not make window size to (0, 0) when minimize, but i'll add it anyway
+    int width = 0, height = 0;
+    glfwGetFramebufferSize(window, &width, &height);
+    while(width == 0 || height == 0){
+        glfwGetFramebufferSize(window, &width, &height);
+        glfwWaitEvents();
+    }
+
     vkDeviceWaitIdle(device);
     cleanupSwapChain();
 
