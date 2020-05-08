@@ -11,8 +11,8 @@ run: ${rwwtt}
 	./${rwwtt}
 
 frag.spv: shader.frag
-	glslc $< -o $@
+	glslc $< -O -o $@
 vert.spv: shader.vert
-	glslc $< -o $@
+	glslc $< -O -o $@
 ${rwwtt}:
 	cd ../build && ninja
