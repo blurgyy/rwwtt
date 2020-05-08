@@ -1,9 +1,13 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
-#define maxstep 1000
-#define maxdist 100.
-#define surfdist .001
+const int maxstep = 1000;
+const float maxdist = 100.;
+const float surfdist = .001;
+
+layout(binding = 0) uniform UniformBufferObject{
+    vec2 res;
+} passedInfo;
 
 layout(location = 0) out vec4 outColor;
 
@@ -54,8 +58,8 @@ float GetLight(vec3 p){
 }
 
 void main() {
-    vec2 resolution = vec2(1024, 768);
-    vec2 uv = (gl_FragCoord.xy - .5 * resolution.xy) / resolution.y;
+    // vec2 resolution = vec2(1024, 768);
+    vec2 uv = (gl_FragCoord.xy - .5 * passedInfo.res.xy) / passedInfo.res.y;
     vec3 col = vec3(0.);
 
     vec3 ro = vec3(0, -1, 0);

@@ -58,6 +58,10 @@ struct Vertex{
     }
 };
 
+struct UniformBufferObject{
+    glm::vec2 res; // window resolution
+};
+
 struct QueueFamilyIndices{
     std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> presentFamily;
