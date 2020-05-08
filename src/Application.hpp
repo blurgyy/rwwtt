@@ -20,7 +20,7 @@ const std::vector<uint32_t> indices = {
     0, 1, 2, 2, 3, 0
 };
 
-class TriangleApplication
+class Application
 {
 private:
     GLFWwindow *window;
@@ -73,7 +73,7 @@ private:
     }
 
     static void framebufferResizeCallback(GLFWwindow *window, int width, int height){
-        auto app = reinterpret_cast<TriangleApplication*>(glfwGetWindowUserPointer(window));
+        auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
         app->framebufferResized = true;
     }
 

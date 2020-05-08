@@ -6,7 +6,7 @@ all: frag.spv vert.spv run
 clean:
 	-rm -f ${outputs}
 run:
-	../build/vulkanTest
+	../build/rwwtt
 
 frag.spv: shader.frag
 	glslc $< -o $@

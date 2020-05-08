@@ -2,11 +2,11 @@
 #include <exception>
 #include <cstdlib>
 
-#include <TriangleApplication.hpp>
+#include <Application.hpp>
 #include <global.hpp>
 
 int main(){
-    TriangleApplication app;
+    Application app;
     try{
         app.run();
     } catch(const std::exception& e){
