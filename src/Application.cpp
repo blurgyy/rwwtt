@@ -338,7 +338,8 @@ void Application::createDescriptorSetLayout(){
 
 void Application::createGraphicsPipeline(){
     auto vertexShaderCode = readFile("../shaders/vert.spv");
-    auto fragShaderCode = readFile("../shaders/frag.spv");
+    // auto fragShaderCode = readFile("../shaders/frag.spv");
+    auto fragShaderCode = readFile("../shaders/vader.spv");
     VkShaderModule vertShaderModule = createShaderModule(vertexShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
 
