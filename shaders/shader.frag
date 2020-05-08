@@ -12,7 +12,7 @@ layout(location = 0) out vec4 outColor;
 
 float distField1(vec3 p){
     float dist = 0.;
-    vec4 sphere = vec4(0, -2, 5, .6);
+    vec4 sphere = vec4(0, -.5, 5, .5);
     dist = length(sphere.xyz - p) - sphere.w;
     return dist;
 }
@@ -21,14 +21,25 @@ float distField2(vec3 p){
     dist = -p.y;
     return dist;
 }
+float distField3(vec3 p){ // box
+    float dist = 0.;
+    vec3 rad = vec3(.5, .5, 2);
+    vec3 cent = vec3(3, -2, 7);
+    p -= cent;
+    vec3 q = abs(p) - rad;
+    dist = length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.);
+    return dist;
+}
 
 float getDist(vec3 p){
+    int FIELDS = 3;
     float d[] = {
         distField1(p),
-        distField2(p)
+        distField2(p),
+        distField3(p)
     };
     float minDist = maxdist;
-    for(int i = 0; i < 2; ++ i){
+    for(int i = 0; i < FIELDS; ++ i){
         minDist = min(minDist, d[i]);
     }
     return minDist;
