@@ -722,13 +722,18 @@ void Application::recreateSwapChain(){
 }
 
 void Application::updateUniformBuffer(uint32_t currentImageIndex){
-    UniformBufferObject windowInfo;
-    windowInfo.res = glm::vec2(swapChainExtent.width, swapChainExtent.height);
-    // printf("(%d, %d)\n", (int)windowInfo.res.x, (int)windowInfo.res.y);
+    static auto startTime = std::chrono::high_resolution_clock::now();
+
+    UniformBufferObject passedInfo;
+    passedInfo.res = glm::vec2(swapChainExtent.width, swapChainExtent.height);
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    passedInfo.time = 
+        std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    // printf("(%d, %d)\n", (int)passedInfo.res.x, (int)passedInfo.res.y);
 
     void* data;
-    vkMapMemory(device, uniformBuffersMemory[currentImageIndex], 0, sizeof(windowInfo), 0, &data);
-    memcpy(data, &windowInfo, sizeof(windowInfo));
+    vkMapMemory(device, uniformBuffersMemory[currentImageIndex], 0, sizeof(passedInfo), 0, &data);
+    memcpy(data, &passedInfo, sizeof(passedInfo));
     vkUnmapMemory(device, uniformBuffersMemory[currentImageIndex]);
 }
 

@@ -7,6 +7,7 @@ const float surfdist = .001;
 
 layout(binding = 0) uniform UniformBufferObject{
     vec2 res;
+    float time;
 } passedInfo;
 layout(location = 0) out vec4 outColor;
 
@@ -68,7 +69,7 @@ vec3 getNormal(vec3 p){
 }
 
 float getPixelColor(vec3 p){
-	vec3 lightPos = vec3(-2, -5, 6);
+	vec3 lightPos = vec3(-2, -5, 6) + vec3(sin(passedInfo.time), cos(passedInfo.time), 0);
     vec3 l = normalize(lightPos - p);
 	vec3 n = getNormal(p);
     

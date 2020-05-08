@@ -62,6 +62,7 @@ struct Vertex{
 struct UniformBufferObject{
     // ! take care of alignments
     glm::vec2 res; // window resolution
+    float time;
 };
 
 struct QueueFamilyIndices{
