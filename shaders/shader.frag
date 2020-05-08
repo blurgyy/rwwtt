@@ -11,6 +11,28 @@ layout(binding = 0) uniform UniformBufferObject{
 } passedInfo;
 layout(location = 0) out vec4 outColor;
 
+vec3 rotateY(in vec3 p, float t)
+{
+    float co = cos(t);
+    float si = sin(t);
+    p.xz = mat2(co,-si,si,co)*p.xz;
+    return p;
+}
+vec3 rotateX(in vec3 p, float t)
+{
+    float co = cos(t);
+    float si = sin(t);
+    p.yz = mat2(co,-si,si,co)*p.yz;
+    return p;
+}
+vec3 rotateZ(in vec3 p, float t)
+{
+    float co = cos(t);
+    float si = sin(t);
+    p.xy = mat2(co,-si,si,co)*p.xy;
+    return p;
+}
+
 float distField1(vec3 p){
     float dist = 0.;
     vec4 sphere = vec4(0, -.5, 5, .5);
@@ -24,12 +46,13 @@ float distField2(vec3 p){
 }
 float distField3(vec3 p){ // box
     float dist = 0.;
-    vec3 rad = vec3(.5, .5, 2);
-    vec3 cent = vec3(3, -2, 7);
+    vec3 rad = vec3(.5, .5, .5);
+    vec3 cent = vec3(0, -2, 6);
     p -= cent;
+    p = rotateY(p, passedInfo.time/3);
     vec3 q = abs(p) - rad;
     dist = length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.);
-    return dist;
+    return dist - .2;
 }
 
 float getDist(vec3 p){
@@ -87,6 +110,8 @@ void main() {
     vec3 col = vec3(0.);
 
     vec3 ro = vec3(0, -1, 0);
+    vec3 cent = vec3(0, 0, 2);
+    ro = rotateY(ro-cent, passedInfo.time) + cent;
     vec3 rd = normalize(vec3(uv.xy, 1));
     float d = rayMarch(ro, rd);
     vec3 p = ro + d * rd;
