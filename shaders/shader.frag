@@ -55,12 +55,17 @@ float distField3(vec3 p){ // box
     return dist - .2;
 }
 
+float rep3(vec3 p, vec3 c){
+    vec3 q = mod(p, c) - .5 * c;
+    return distField3(q);
+}
+
 float getDist(vec3 p){
     int FIELDS = 3;
     float d[] = {
         distField1(p),
         distField2(p),
-        distField3(p)
+        rep3(p, vec3(80))
     };
     float minDist = maxdist;
     for(int i = 0; i < FIELDS; ++ i){
@@ -110,8 +115,8 @@ void main() {
     vec3 col = vec3(0.);
 
     vec3 ro = vec3(0, -1, 0);
-    vec3 cent = vec3(0, 0, 2);
-    ro = rotateY(ro-cent, passedInfo.time) + cent;
+    // vec3 cent = vec3(0, 0, 2);
+    // ro = rotateY(ro-cent, passedInfo.time) + cent;
     vec3 rd = normalize(vec3(uv.xy, 1));
     float d = rayMarch(ro, rd);
     vec3 p = ro + d * rd;
