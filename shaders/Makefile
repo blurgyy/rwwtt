@@ -1,14 +1,18 @@
 outputs = frag.spv vert.spv
+rwwtt = ../build/rwwtt
 
 .PHONY: all clean run
 
-all: frag.spv vert.spv run
+all: frag.spv vert.spv ${rwwtt}
 clean:
 	-rm -f ${outputs}
-run:
-	../build/rwwtt
+	cd ../build && ninja clean
+run: ${rwwtt}
+	./${rwwtt}
 
 frag.spv: shader.frag
 	glslc $< -o $@
 vert.spv: shader.vert
 	glslc $< -o $@
+${rwwtt}:
+	cd ../build && ninja
