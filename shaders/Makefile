@@ -1,10 +1,12 @@
 outputs = frag.spv vert.spv
 
-.PHONY: all clean
+.PHONY: all clean run
 
-all: frag.spv vert.spv
+all: frag.spv vert.spv run
 clean:
 	-rm -f ${outputs}
+run:
+	../build/vulkanTest
 
 frag.spv: shader.frag
 	glslc $< -o $@

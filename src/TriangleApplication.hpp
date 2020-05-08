@@ -10,10 +10,10 @@
 
 // ccw
 const std::vector<Vertex> vertices = {
-    {{-0.5f, -0.5f}, {1.f, 1.f, 0.f}},
-    {{-0.5f, 0.5f}, {0.f, 0.f, 1.f}},
-    {{0.5f, 0.5f}, {0.f, 1.f, 1.f}},
-    {{0.5f, -0.5f}, {1.f, 0.f, 0.f}}
+    {{-1.f, -1.f}, {1.f, 1.f, 0.f}},
+    {{-1.f, 1.f}, {0.f, 0.f, 1.f}},
+    {{1.f, 1.f}, {0.f, 1.f, 1.f}},
+    {{1.f, -1.f}, {1.f, 0.f, 0.f}}
 };
 
 const std::vector<uint32_t> indices = {
