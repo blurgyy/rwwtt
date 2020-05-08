@@ -79,12 +79,15 @@ float softShadow(vec3 ro, vec3 rd, float tmin, float tmax){
     // use tmin > 0 to prevent rays stop without leaving local area
     float ret = 1.0;
     float t = tmin;
+    float prev_h = 1e20;
     for(int i = 0; i < MAXSTEPS; ++ i){
         vec3 pos = ro + t * rd;
         float h = map(pos);
-        // ret = min(ret, 10 * h / t);
-        ret = min(ret, 10*h/t);
-        t += clamp(h, 0.01, 0.5);
+        float y = h*h/(2*prev_h);
+        float d = sqrt(h*h - y*y);
+        ret = min( ret, 10*d/max(t-y,0) );
+        prev_h = h;
+        t += h;
         if(t > tmax || ret < 1e-4){
             break;
         }
