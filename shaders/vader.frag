@@ -10,6 +10,27 @@ const float MAXDIST = 1e8;
 const float EPS = 1e-3;
 
 // ------------------------------------------------
+// from: https://www.shadertoy.com/view/4tByz3
+vec3 rotateY( in vec3 p, float t ){
+    float co = cos(t);
+    float si = sin(t);
+    p.xz = mat2(co,-si,si,co)*p.xz;
+    return p;
+}
+vec3 rotateX( in vec3 p, float t ){
+    float co = cos(t);
+    float si = sin(t);
+    p.yz = mat2(co,-si,si,co)*p.yz;
+    return p;
+}
+vec3 rotateZ( in vec3 p, float t ){
+    float co = cos(t);
+    float si = sin(t);
+    p.xy = mat2(co,-si,si,co)*p.xy;
+    return p;
+}
+
+// ------------------------------------------------
 
 float sdSphere(vec3 p, vec4 sph){
     p -= sph.xyz;
@@ -23,6 +44,10 @@ float sdRoundBox(vec3 p, vec3 rad, float r){
     vec3 q = abs(p) - rad;
     return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.) - r;
 }
+float sdTwistedBox(vec3 p, vec3 rad){
+    vec3 q = rotateY(p, p.y*1.7);
+    return sdBox(q, rad);
+}
 float sdPlane(vec3 p){
     return -p.y;
 }
@@ -32,8 +57,9 @@ float sdPlane(vec3 p){
 float map(vec3 p){
     vec3 q = vec3(fract(p.x + 0.5) - 0.5, p.yz);
     return min(
-        sdBox(q-vec3(0, -0.25, 0), vec3(0.2, 0.25, 0.2)),
+        // sdBox(q-vec3(0, -0.25, 0), vec3(0.2, 0.25, 0.2)),
         // sdRoundBox(q-vec3(0, -0.25, 0), vec3(0.2, 0.15, 0.2), 0.1),
+        sdTwistedBox(q-vec3(0, -0.25, 0), vec3(0.2, 0.25, 0.2)),
         sdPlane(p)
     );
 }
