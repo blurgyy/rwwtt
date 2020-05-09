@@ -11,7 +11,7 @@ const float MAXDIST = 1e8;
 const float EPS = 1e-5;
 const float PI = acos(-1.0);
 const float TWOPI = 2*acos(-1.0);
-const int AA = 1;
+const int AA = 2;
 
 #define MAT_CONE    0
 #define MAT_CREAM   1
@@ -394,20 +394,12 @@ vec2 mapCone(vec3 p, out vec3 newbase, vec2 last){
 }
 
 vec2 map(vec3 p){
-// float mapBars(vec3 p, int rep, float r, float r_bot, float r_top, float h){
-    // float di = mapBars(p, 5, 0.02, 0.3, 0.4, 1.0);
-    // di = min(di, sdPlane(p));
-    // float di = sdStick(p, vec3(0), vec3(-1), 0.02);
-    // float di = mapCandy(p);
-    // return vec2(di, MAT_GROUND);
     vec2 ret = vec2(sdPlane(p), MAT_GROUND);
     vec3 cone_top;
     ret = mapCone(p, cone_top, ret);
     float dist = ret.x;
-    // ret = mapHead(p, cone_top, ret);
+    ret = mapHead(p, cone_top, ret);
     ret = mapCandy(p, ret);
-    // dist = smin(dist, mapHead(p, cone_top), 0.01);
-    // dist = min(dist, sdPlane(p));
     return ret;
 }
 
