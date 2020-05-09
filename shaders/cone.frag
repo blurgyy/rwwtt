@@ -31,7 +31,13 @@ vec3 rotateZ( in vec3 p, float t ){
     p.xy = mat2(co,-si,si,co)*p.xy;
     return p;
 }
-
+// smooth min function for blending
+// from: https://iquilezles.org/www/articles/smin/smin.htm
+float smin( float a, float b, float k ){
+    // polynomial smooth min (k = 0.1);
+    float h = clamp( 0.5+0.5*(b-a)/k, 0.0, 1.0 );
+    return mix( b, a, h ) - k*h*(1.0-h);
+}
 // ------------------------------------------------
 
 float dot2(vec2 x){return dot(x, x);}
@@ -136,7 +142,8 @@ float mapCream(vec3 p, vec3 bottom, vec3 offset,
         vec3 q = rotateY(p, TWOPI*i/rep);
         q = q - bottom - offset;
         q = invrot * q;
-        dist = min(dist, sdRoundCone(q, r, h, corner));
+        // dist = min(dist, sdRoundCone(q, r, h, corner));
+        dist = smin(dist, sdRoundCone(q, r, h, corner), 0.01);
     }
     return dist;
 }
@@ -147,7 +154,6 @@ float mapHead(vec3 p, vec3 bottom){
     vec3 q_top = rotateY(p, -p.y * 6);
     vec3 q_bot = rotateY(p, -p.y * 5);
     // vec3 q = p;
-    float dist = MAXDIST;
     // bottom cream
     vec3 offset_bot = vec3(0.1, -0.03, 0.3);
     int rep_bot = 7;
@@ -170,9 +176,9 @@ float mapHead(vec3 p, vec3 bottom){
           x_top = -0.33,
           y_top = -PI/3;
 
-    dist = min(dist, mapCream(q_bot, bottom, offset_bot, rep_bot, x_bot, y_bot, r_bot, h_bot));
+    float dist = mapCream(q_bot, bottom, offset_bot, rep_bot, x_bot, y_bot, r_bot, h_bot);
     bottom += -h_bot * cos(x_bot) + vec3(0, 0.05, 0);
-    dist = min(dist, mapCream(q_top, bottom, offset_top, rep_top, x_top, y_top, r_top, h_top));
+    dist = smin(dist, mapCream(q_top, bottom, offset_top, rep_top, x_top, y_top, r_top, h_top), 0.05);
     // dist = min(dist, mapCream(q, bottom, vec3(0.1, -0.03, 0.3), 7, -PI/7, PI/10));
     return dist;
 }
@@ -216,7 +222,7 @@ vec4 mapCone(vec3 p){
     dist = min(dist, sdTorus(p-ring2_cent, ring2));
     dist = min(dist, sdTorus(p-ring3_cent, ring3));
     // dist = min(dist, sdCappedCone(p, cone1_top, cone1_bot, cone1_r_top, cone1_r_bot));
-    dist = min(dist, sdCappedCone(p-cone1_cent, cone1_halfh, cone1_r_top, cone1_r_bot, ring_wid));
+    dist = smin(dist, sdCappedCone(p-cone1_cent, cone1_halfh, cone1_r_top, cone1_r_bot, ring_wid), ring_wid);
     dist = min(dist, sdCappedCone(p-cone2_cent, cone2_halfh, cone2_r_top, cone2_r_bot, ring_wid));
     dist = min(dist, sdBowl(p-bowl_cent, bowl_r, bowl_r_top, bowl_r_bot));
     // return dist;
@@ -229,7 +235,7 @@ float map(vec3 p){
     vec4 dtop = mapCone(p);
     vec3 cone_top = dtop.yzw;
     float dist = dtop.x;
-    dist = min(dist, mapHead(p, cone_top));
+    dist = smin(dist, mapHead(p, cone_top), 0.01);
     dist = min(dist, sdPlane(p));
     // dist = min(dist, sdBox(q-body_center, vec3(0.2, 0.25, 0.2)));
     return dist;
