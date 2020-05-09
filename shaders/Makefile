@@ -1,4 +1,4 @@
-outputs = frag.spv vert.spv vader.spv
+outputs = frag.spv vert.spv vader.spv icecream.spv
 rwwtt = ../build/rwwtt
 
 .PHONY: all clean run test vader

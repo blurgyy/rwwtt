@@ -3,6 +3,7 @@
 layout(binding = 0) uniform UniformBufferObject{
     vec2 res;
     float time;
+    vec2 mouse;
 } passedInfo;
 layout(location = 0) out vec4 outColor;
 const int MAXSTEPS = 100;
@@ -358,6 +359,9 @@ void main(){
     vec3 color = vec3(0.);
 
     vec3 ro = vec3(1, -1, 2);
+    // vec3 ro = vec3(3*sin(0.7*length(passedInfo.mouse)*0.01),
+    //                -1.5 + 0.3*sin(0.5*length(passedInfo.mouse)*0.01),
+    //                2*cos(0.7*length(passedInfo.mouse)*0.01));
     // vec3 ro = vec3(3*sin(0.7*passedInfo.time),
     //                -1.5 + 0.3*sin(0.5*passedInfo.time),
     //                2*cos(0.7*passedInfo.time));

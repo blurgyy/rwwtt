@@ -731,6 +731,9 @@ void Application::updateUniformBuffer(uint32_t currentImageIndex){
     auto currentTime = std::chrono::high_resolution_clock::now();
     passedInfo.time = 
         std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    passedInfo.mouse = glm::vec2(xpos, ypos);
     // printf("(%d, %d)\n", (int)passedInfo.res.x, (int)passedInfo.res.y);
 
     void* data;

@@ -61,8 +61,9 @@ struct Vertex{
 
 struct UniformBufferObject{
     // ! take care of alignments
-    glm::vec2 res; // window resolution
-    float time;
+    glm::vec2 res;      // window resolution
+    float time;         // passed time
+    glm::vec2 mouse;    // mouse location
 };
 
 struct QueueFamilyIndices{
