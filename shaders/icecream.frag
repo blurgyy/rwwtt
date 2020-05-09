@@ -14,15 +14,25 @@ const int AA = 2;
 
 #define MAT_CONE  0
 #define MAT_CREAM 1
-#define MAT_PLANE 2
+#define MAT_GROUND 2
 
 struct Material{
-    vec3 kd;
+    vec3 kd;            // color
+    float rn;           // roughness
 };
 const Material materials[] =  {
-    Material(vec3(0.8627, 0.6510, 0.3255)), // cone
-    Material(vec3(0.9255, 0.9294, 0.8510)), // cream
-    Material(vec3(0.9451, 0.9451, 0.9451))  // plane
+    Material( // cone
+        vec3(0.8627, 0.6510, 0.3255),
+        1.00
+    ),
+    Material( // cream
+        vec3(0.9255, 0.9294, 0.8510),
+        0.25
+    ),
+    Material( // ground
+        vec3(0.9451, 0.9451, 0.9451),
+        0.90
+    )
 };
 
 // ------------------------------------------------
@@ -211,7 +221,7 @@ vec2 mapCone(vec3 p, out vec3 newbase, vec2 last){
 }
 
 vec2 map(vec3 p){
-    vec2 ret = vec2(sdPlane(p), MAT_PLANE);
+    vec2 ret = vec2(sdPlane(p), MAT_GROUND);
     vec3 cone_top;
     ret = mapCone(p, cone_top, ret);
     float dist = ret.x;
@@ -297,21 +307,22 @@ vec3 render(vec3 ro, vec3 rd){
 
     vec2 point = castRay(ro, rd);
     float t = point.x;
-    int mat_ind = int(point.y + 0.5);
+    int mat_id = int(point.y + 0.5);
 
     if(t > -0.5){
         vec3 p = ro + t * rd;
         vec3 n = getNormal(p);
 
         // vec3 kd = vec3(0.3);
-        vec3 kd = materials[mat_ind].kd;
+        vec3 kd = materials[mat_id].kd;
+        float pn = exp2(10*(1-materials[mat_id].rn));
 
         vec3 l = normalize(vec3(-1, -3, -5)); // parallel light rays
         vec3 h = normalize(l-rd);
 
-        vec3 light = vec3(1.0, 0.7, 0.5);
+        vec3 light = vec3(1.0, 0.7, 0.5)/1.2;
         float diffuse = clamp(dot(n, l), 0, 1) * softShadow(p+n*EPS*10, l, 0.07, 3.0);
-        float specular = pow(clamp(dot(h, n), 0, 1), 150) * diffuse;
+        float specular = pow(clamp(dot(h, n), 0, 1), pn) * diffuse;
 
         ret_color = (kd*diffuse + specular) * light;
 
