@@ -44,7 +44,7 @@ vec3 rotateZ( in vec3 p, float t ){
     p.xy = mat2(co,-si,si,co)*p.xy;
     return p;
 }
-// smooth min function for blending
+// smooth min function for blending distance fields
 // from: https://iquilezles.org/www/articles/smin/smin.htm
 float smin( float a, float b, float k ){
     // polynomial smooth min (k = 0.1);
