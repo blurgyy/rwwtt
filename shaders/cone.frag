@@ -45,35 +45,24 @@ float dot2(vec3 x){return dot(x, x);}
 
 // ------------------------------------------------
 
-float sdSphere(vec3 p, vec4 sph){
-    p -= sph.xyz;
-    return length(p) - sph.w;
-}
-float sdBox(vec3 p, vec3 rad){
-    vec3 q = abs(p) - rad;
-    return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.);
-}
-float sdRoundBox(vec3 p, vec3 rad, float r){
-    vec3 q = abs(p) - rad;
-    return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.) - r;
-}
-float sdTwistedBox(vec3 p, vec3 rad, float ext){
-    vec3 q = rotateY(p, p.y*ext);
-    return sdBox(q, rad);
-}
 float sdPlane(vec3 p){
     return -p.y;
 }
-float sdCappedCone( vec3 p, float h, float r1, float r2, float corner )
+float sdCappedRoundCone(vec3 p, float h, float r1, float r2, float corner)
 {
-    r1 -= corner; r2 -= corner;
-    vec2 q = vec2( length(p.xz), p.y );
-    vec2 k1 = vec2(r2,h);
-    vec2 k2 = vec2(r2-r1,2.0*h);
-    vec2 ca = vec2(q.x-min(q.x,(q.y<0.0)?r1:r2), abs(q.y)-h);
-    vec2 cb = q - k1 + k2*clamp( dot(k1-q,k2)/dot2(k2), 0.0, 1.0 );
-    float s = (cb.x<0.0 && ca.y<0.0) ? -1.0 : 1.0;
-    return s*sqrt( min(dot2(ca),dot2(cb)) ) - corner;
+    vec2 q = vec2(length(p.xz), -p.y);
+    vec2 a = vec2(r1, h);
+    vec2 b = vec2(r2, -h);
+    vec2 m = a - b;
+    vec2 bq = q - b;
+    float mm = dot2(m);
+    float dist = MAXDIST;
+    if(q.y > h && q.x < r1 || q.y < -h && q.x < r2){
+        dist = abs(q.y) - h;
+    } else {
+        dist = length(m * clamp(dot(bq,m)/mm, 0, 1) - bq);
+    }
+    return dist;
 }
 float sdBowl( vec3 p, float r, float r1, float r2 ) {
     float h1 = sqrt(r*r - r1*r1);
@@ -92,7 +81,7 @@ float sdBowl( vec3 p, float r, float r1, float r2 ) {
     }
     return dist;
 }
-float sdTorus( vec3 p, vec2 t ){
+float sdTorus(vec3 p, vec2 t){
     vec2 q = vec2(length(p.xz)-t.x,p.y);
     return length(q)-t.y;
 }
@@ -159,15 +148,8 @@ float mapHead(vec3 p, vec3 bottom){
     int rep_bot = 7;
     float r_bot = 0.16,
           h_bot = 0.40,
-        //   x_bot = -PI/3,
           x_bot = -1,
           y_bot = PI/10;
-    // vec3 offset_bot = vec3(0.1, -0.03, 0.3);
-    // int rep_bot = 7;
-    // float x_bot = -PI/7,
-    //       y_bot = PI/10,
-    //       r_bot = 0.14,
-    //       h_bot = 0.75;
     // top cream
     vec3 offset_top = vec3(0.06, -0.03, 0.3);
     int rep_top = 5;
@@ -179,7 +161,6 @@ float mapHead(vec3 p, vec3 bottom){
     float dist = mapCream(q_bot, bottom, offset_bot, rep_bot, x_bot, y_bot, r_bot, h_bot);
     bottom += -h_bot * cos(x_bot) + vec3(0, 0.05, 0);
     dist = smin(dist, mapCream(q_top, bottom, offset_top, rep_top, x_top, y_top, r_top, h_top), 0.05);
-    // dist = min(dist, mapCream(q, bottom, vec3(0.1, -0.03, 0.3), 7, -PI/7, PI/10));
     return dist;
 }
 
@@ -221,11 +202,9 @@ vec4 mapCone(vec3 p){
     float dist = sdTorus(p-ring1_cent, ring1);
     dist = min(dist, sdTorus(p-ring2_cent, ring2));
     dist = min(dist, sdTorus(p-ring3_cent, ring3));
-    // dist = min(dist, sdCappedCone(p, cone1_top, cone1_bot, cone1_r_top, cone1_r_bot));
-    dist = smin(dist, sdCappedCone(p-cone1_cent, cone1_halfh, cone1_r_top, cone1_r_bot, ring_wid), ring_wid);
-    dist = min(dist, sdCappedCone(p-cone2_cent, cone2_halfh, cone2_r_top, cone2_r_bot, ring_wid));
+    dist = smin(dist, sdCappedRoundCone(p-cone1_cent, cone1_halfh, cone1_r_top, cone1_r_bot, ring_wid), ring_wid);
+    dist = min(dist, sdCappedRoundCone(p-cone2_cent, cone2_halfh, cone2_r_top, cone2_r_bot, ring_wid));
     dist = min(dist, sdBowl(p-bowl_cent, bowl_r, bowl_r_top, bowl_r_bot));
-    // return dist;
     return vec4(dist, bowl_top);
 }
 
@@ -237,25 +216,10 @@ float map(vec3 p){
     float dist = dtop.x;
     dist = smin(dist, mapHead(p, cone_top), 0.01);
     dist = min(dist, sdPlane(p));
-    // dist = min(dist, sdBox(q-body_center, vec3(0.2, 0.25, 0.2)));
     return dist;
-    // min(
-    //     sdBox(q-body_center, vec3(0.2, 0.25, 0.2)),
-    //     // sdRoundBox(q-body_center, vec3(0.2, 0.15, 0.2), 0.1),
-    //     // sdTwistedBox(q-body_center, vec3(0.2, 0.25, 0.2)),
-    //     // sdCappedCone(p-body_center, vec3(0, -0.5, 0), vec3(0, 0, 0), 0.3, 0.2),
-    //     // sdTorus(p-body_center, vec2(0.5, 0.1)),
-    //     mapCone(p),
-    //     sdPlane(p)
-    // );
 }
 
 vec3 getNormal(vec3 p){
-    // vec2 e = vec2(1.0,-1.0)*0.5773*0.0005;
-    // return normalize( e.xyy*map( p + e.xyy ) + 
-	// 				  e.yyx*map( p + e.yyx ) + 
-	// 				  e.yxy*map( p + e.yxy ) + 
-	// 				  e.xxx*map( p + e.xxx ) );
     vec2 eps = vec2(EPS, 0);
     vec3 n = vec3(
     	map(p + eps.xyy) - map(p - eps.xyy),
@@ -288,7 +252,7 @@ float castRay(vec3 ro, vec3 rd){
 }
 
 float softShadow(vec3 ro, vec3 rd, float tmin, float tmax){
-    // use tmin > 0 to prevent rays stop without leaving local area
+    // use tmin > 0 to prevent rays from stopping without leaving local area
     float ret = 1.0;
     float t = tmin;
     float prev_h = 1e20;
@@ -331,7 +295,6 @@ vec3 render(vec3 ro, vec3 rd){
 
         vec3 kd = vec3(0.3);
 
-        // vec3 l = normalize(vec3(-1, -3, -5)-p);
         vec3 l = normalize(vec3(-1, -3, -5)); // parallel light rays
         vec3 h = normalize(l-rd);
 
@@ -349,11 +312,6 @@ vec3 render(vec3 ro, vec3 rd){
 
         // fog
         ret_color *= exp( -0.0005*t*t*t );
-        // ret_color += diffuse + specular;
-        // ret_color += softShadow(p, l, 0.01, 3.0);
-        // vec3 mate = vec3(0.3);
-        // ret_color = mate * 4.0*diffuse*vec3(1.00,0.70,0.5);
-        // ret_color +=      12.0*specular*vec3(1.00,0.70,0.5);
     }
 
     return clamp(ret_color, 0, 1);
@@ -373,24 +331,15 @@ mat3 setCamera( in vec3 ro, in vec3 ta, float cr ){
 
 void main(){
     vec2 uv = (gl_FragCoord.xy - .5 * passedInfo.res.xy) / passedInfo.res.y;
-    vec3 col = vec3(0.);
+    vec3 color = vec3(0.);
 
     vec3 ro = vec3(3*sin(0.7*passedInfo.time),
                    -1.5 + 0.3*sin(0.5*passedInfo.time),
                    2*cos(0.7*passedInfo.time));
-    // vec3 ro = vec3(-1, -1, -2);
     vec3 ta = vec3(0, -0.25, 0);
-    // vec3 ta = vec3(passedInfo.time, -0.25, 0);
     mat3 camRot = setCamera( ro, ta, 0.0 );
     vec3 rd = camRot * normalize(vec3(uv.x, uv.y, 1));
 
-    col = render(ro, rd);
-
-    // float dScene = castRay(ro, rd);
-    // vec3 p = ro + dScene * rd;
-    // col = phongShading(p, rd);
-    // col = naiveShading(p, rd);
-    // col = getNormal(p);
-    // col = vec3(dScene) / 20.0;
-    outColor = vec4(col.xyz, 1.);
+    color = render(ro, rd);
+    outColor = vec4(color.xyz, 1.);
 }
