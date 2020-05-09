@@ -10,6 +10,7 @@ const float MAXDIST = 1e8;
 const float EPS = 1e-5;
 const float PI = acos(-1.0);
 const float TWOPI = 2*acos(-1.0);
+const int AA = 2;
 
 #define MAT_CONE  0
 #define MAT_CREAM 1
@@ -348,9 +349,19 @@ void main(){
                    2*cos(0.7*passedInfo.time));
     vec3 ta = vec3(0, -0.5, 0);
     mat3 camRot = setCamera( ro, ta, 0.0 );
-    vec3 rd = camRot * normalize(vec3(uv.x, uv.y, 1));
+    // vec3 rd = camRot * normalize(vec3(uv.x, uv.y, 1));
 
-    color = render(ro, rd);
+    // super sampling anti aliasing
+    for(int i = 0; i < AA; ++ i){
+        for(int j = 0; j < AA; ++ j){
+            vec2 px = uv.xy + vec2(i, j)/AA/passedInfo.res.y;
+            vec3 rd = camRot * normalize(vec3(px.xy, 1));
+            color += render(ro, rd);
+        }
+    }
+    color /= AA * AA;
+
+    // color = render(ro, rd);
     // float t = castRay(ro, rd).x;
     // color = getNormal(ro + t * rd);
     outColor = vec4(color.xyz, 1.);
