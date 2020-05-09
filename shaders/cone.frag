@@ -114,10 +114,13 @@ float sdRoundCone( vec3 p, float r, float h, float corner ){
 
 // ------------------------------------------------
 
-float mapCream(vec3 p, vec3 bottom){
-    const int rep = 7;
-    const float angx = -PI/7;
-    const float angy = PI/10;
+float mapCream(vec3 p, vec3 bottom, vec3 offset,
+               int rep, float angx, float angy, float r, float h){
+    // vec3 offset (in which offset.y is the radius of the round corner)
+    // int rep, float angx, float angy, float r, float h
+    // const int rep = 7;
+    // const float angx = -PI/7;
+    // const float angy = PI/10;
     float cosx = cos(angx), sinx = sin(angx);
     float cosy = cos(angy), siny = sin(angy);
     const mat3 rotx = mat3(
@@ -131,12 +134,13 @@ float mapCream(vec3 p, vec3 bottom){
         siny, 0,  cosy
     );
     mat3 invrot = inverse(roty * rotx);
+    float corner = abs(offset.y);
     float dist = MAXDIST;
     for(int i = 0; i < rep; ++ i){
         vec3 q = rotateY(p, TWOPI*i/rep);
-        q = q - bottom - vec3(0.1, -0.03, 0.3);
+        q = q - bottom - offset;
         q = invrot * q;
-        dist = min(dist, sdRoundCone(q, 0.14, 0.75, 0.03));
+        dist = min(dist, sdRoundCone(q, r, h, corner));
     }
     return dist;
 }
@@ -144,8 +148,37 @@ float mapCream(vec3 p, vec3 bottom){
 // ------------------------------------------------
 
 float mapHead(vec3 p, vec3 bottom){
-    vec3 q = rotateY(p, -p.y * 5);
-    return mapCream(q, bottom);
+    vec3 q_top = rotateY(p, -p.y * 6);
+    vec3 q_bot = rotateY(p, -p.y * 5);
+    // vec3 q = p;
+    float dist = MAXDIST;
+    // bottom cream
+    vec3 offset_bot = vec3(0.1, -0.03, 0.3);
+    int rep_bot = 7;
+    float r_bot = 0.16,
+          h_bot = 0.40,
+        //   x_bot = -PI/3,
+          x_bot = -1,
+          y_bot = PI/10;
+    // vec3 offset_bot = vec3(0.1, -0.03, 0.3);
+    // int rep_bot = 7;
+    // float x_bot = -PI/7,
+    //       y_bot = PI/10,
+    //       r_bot = 0.14,
+    //       h_bot = 0.75;
+    // top cream
+    vec3 offset_top = vec3(0.06, -0.03, 0.3);
+    int rep_top = 5;
+    float r_top = 0.10,
+          h_top = 0.60,
+          x_top = -0.33,
+          y_top = -PI/3;
+
+    dist = min(dist, mapCream(q_bot, bottom, offset_bot, rep_bot, x_bot, y_bot, r_bot, h_bot));
+    bottom += -h_bot * cos(x_bot) + vec3(0, 0.05, 0);
+    dist = min(dist, mapCream(q_top, bottom, offset_top, rep_top, x_top, y_top, r_top, h_top));
+    // dist = min(dist, mapCream(q, bottom, vec3(0.1, -0.03, 0.3), 7, -PI/7, PI/10));
+    return dist;
 }
 
 vec4 mapCone(vec3 p){
