@@ -11,6 +11,23 @@ const float EPS = 1e-5;
 const float PI = acos(-1.0);
 const float TWOPI = 2*acos(-1.0);
 
+#define M_CONE  0
+#define M_CREAM 1
+#define M_PLANE 2
+
+struct Material{
+    vec3 kd;
+};
+const Material m_cone =  Material(
+    vec3(0.8627, 0.6510, 0.3255)
+);
+const Material m_cream = Material(
+    vec3(0.9255, 0.9294, 0.8510)
+);
+const Material m_plane = Material(
+    vec3(0.9451, 0.9451, 0.9451)
+);
+
 // ------------------------------------------------
 // from: https://www.shadertoy.com/view/4tByz3
 vec3 rotateY( in vec3 p, float t ){
@@ -115,7 +132,7 @@ float mapCream(vec3 p, vec3 bottom, vec3 offset,
     float cosx = cos(angx), sinx = sin(angx);
     float cosy = cos(angy), siny = sin(angy);
     const mat3 rotx = mat3(
-        1,  0,   0,
+        1,  0,       0,
         0, cosx, -sinx,
         0, sinx,  cosx
     );
