@@ -16,13 +16,17 @@ const int AA = 1;
 #define MAT_CONE    0
 #define MAT_CREAM   1
 #define MAT_GROUND  2
-#define MAT_CANDY_1 MAT_GROUND
-#define MAT_CANDY_2 MAT_GROUND
-#define MAT_CANDY_3 MAT_GROUND
-#define MAT_CANDY_4 MAT_GROUND
-#define MAT_CANDY_5 MAT_GROUND
-#define MAT_CANDY_6 MAT_GROUND
-#define MAT_CANDY_7 MAT_GROUND
+#define MAT_CANDY_1 3
+#define MAT_CANDY_2 4
+#define MAT_CANDY_3 5
+#define MAT_CANDY_4 6
+#define MAT_CANDY_5 7
+#define MAT_CANDY_6 MAT_CANDY_1
+#define MAT_CANDY_7 MAT_CANDY_3
+#define MAT_CANDY_8 MAT_CANDY_2
+#define MAT_CANDY_9 MAT_CANDY_5
+#define MAT_CANDY_0 MAT_CANDY_4
+#define CANDY_RN    0.65
 
 struct Material{
     vec3 kd;            // color
@@ -40,6 +44,26 @@ const Material materials[] =  {
     Material( // ground
         vec3(0.9451, 0.9451, 0.9451),
         0.90
+    ),
+    Material( // candy1
+        vec3(0.9451, 0.1324, 0.1216),
+        CANDY_RN
+    ),
+    Material( // candy2
+        vec3(0.1397, 0.9288, 0.0943),
+        CANDY_RN
+    ),
+    Material( // candy3
+        vec3(0.1307, 0.3043, 0.9451),
+        CANDY_RN
+    ),
+    Material( // candy4
+        vec3(0.9670, 0.9451, 0.0642),
+        CANDY_RN
+    ),
+    Material( // candy5
+        vec3(0.8431, 0.3485, 0.5084),
+        CANDY_RN
     )
 };
 
@@ -195,7 +219,7 @@ float mapBars(vec3 p, int rep, float r, float r_bot, float r_top, float h){
 
 // ------------------------------------------------
 
-vec2 mapCandy(vec3 p, vec3 cone_top, vec2 last){
+vec2 mapCandy(vec3 p, vec2 last){
     const vec4 shape = vec4(0.02, 0.03, 0.01, 0.007);
     vec3 cent1 = vec3(0.12, -1, 16);
     vec3 cent2 = vec3(0.06, -1.2, -0.08);
@@ -205,9 +229,9 @@ vec2 mapCandy(vec3 p, vec3 cone_top, vec2 last){
     vec3 cent3 = vec3(-0.16, -0.9, 0.11);
     vec3 cent4 = vec3(-0.2, -0.84, -0.2);
     // TODO: 3x floating candies
-    vec3 cent8 = vec3(1, -1, 0);
-    vec3 cent9 = vec3(1, -1, 0);
-    vec3 cent0 = vec3(1, -1, 0);
+    vec3 cent8 = vec3(0.5, -1, 0.866);
+    vec3 cent9 = vec3(-1.0, -0.8, 0.0);
+    vec3 cent0 = vec3(0.5, -1.2, -0.866);
 
     vec2 ret = last;
     float dist = MAXDIST;
@@ -261,8 +285,28 @@ vec2 mapCandy(vec3 p, vec3 cone_top, vec2 last){
         ret.x = dist;
         ret.y = MAT_CANDY_7;
     }
+    // candy #8
+    q = inverse(rot3(75, 83, 60))*(p-cent8);
+    dist = min(dist, sdRoundBox(q, shape));
+    if(dist < ret.x){
+        ret.x = dist;
+        ret.y = MAT_CANDY_8;
+    }
+    // candy #9
+    q = inverse(rot3(75, 83, 60))*(p-cent9);
+    dist = min(dist, sdRoundBox(q, shape));
+    if(dist < ret.x){
+        ret.x = dist;
+        ret.y = MAT_CANDY_9;
+    }
+    // candy #0
+    q = inverse(rot3(75, 83, 60))*(p-cent0);
+    dist = min(dist, sdRoundBox(q, shape));
+    if(dist < ret.x){
+        ret.x = dist;
+        ret.y = MAT_CANDY_0;
+    }
     return ret;
-    // return MAXDIST;
 }
 
 vec2 mapHead(vec3 p, vec3 bottom, vec2 last){
@@ -360,8 +404,8 @@ vec2 map(vec3 p){
     vec3 cone_top;
     ret = mapCone(p, cone_top, ret);
     float dist = ret.x;
-    ret = mapHead(p, cone_top, ret);
-    ret = mapCandy(p, cone_top, ret);
+    // ret = mapHead(p, cone_top, ret);
+    ret = mapCandy(p, ret);
     // dist = smin(dist, mapHead(p, cone_top), 0.01);
     // dist = min(dist, sdPlane(p));
     return ret;
@@ -492,13 +536,13 @@ void main(){
     vec2 uv = (gl_FragCoord.xy - .5 * passedInfo.res.xy) / passedInfo.res.y;
     vec3 color = vec3(0.);
 
-    // vec3 ro = vec3(1, -1.5, 1);
+    // vec3 ro = vec3(2, -1.5, 2);
     // vec3 ro = vec3(3*sin(0.7*length(passedInfo.mouse)*0.01),
     //                -1.5 + 0.3*sin(0.5*length(passedInfo.mouse)*0.01),
     //                2*cos(0.7*length(passedInfo.mouse)*0.01));
-    vec3 ro = vec3(3*sin(0.7*passedInfo.time),
-                   -1.5 + 0.1*sin(0.5*passedInfo.time),
-                   2*cos(0.7*passedInfo.time));
+    vec3 ro = vec3(3*sin(0.1*passedInfo.time),
+                   -1.5 + 0.05*sin(0.5*passedInfo.time),
+                   2*cos(0.1*passedInfo.time));
     vec3 ta = vec3(0, -0.5, 0);
     mat3 camRot = setCamera( ro, ta, 0.0 );
     // vec3 rd = camRot * normalize(vec3(uv.x, uv.y, 1));
