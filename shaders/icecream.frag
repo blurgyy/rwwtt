@@ -123,7 +123,6 @@ float mapCream(vec3 p, vec3 bottom, vec3 offset,
         vec3 q = rotateY(p, TWOPI*i/rep);
         q = q - bottom - offset;
         q = invrot * q;
-        // dist = min(dist, sdRoundCone(q, r, h, corner));
         dist = smin(dist, sdRoundCone(q, r, h, corner), 0.01);
     }
     return dist;
@@ -134,7 +133,6 @@ float mapCream(vec3 p, vec3 bottom, vec3 offset,
 vec2 mapHead(vec3 p, vec3 bottom, vec2 last){
     vec3 q_top = rotateY(p, -p.y * 6);
     vec3 q_bot = rotateY(p, -p.y * 5);
-    // vec3 q = p;
     // bottom cream
     vec3 offset_bot = vec3(0.1, -0.03, 0.3);
     int rep_bot = 7;
@@ -156,7 +154,6 @@ vec2 mapHead(vec3 p, vec3 bottom, vec2 last){
     vec2 ret = last;
     if(dist < ret.x){
         ret.x = smin(ret.x, dist, 0.01);
-        // ret.x = dist;
         ret.y = MAT_CREAM;
     }
     return ret;
@@ -236,13 +233,12 @@ vec2 castRay(vec3 ro, vec3 rd){
     float tmin = 1.0;
     float tmax = MAXDIST;
 
-    // float t = tmin;
     vec2 ret = vec2(tmin, -1.0);
     for(int i = 0; i < MAXSTEPS; ++ i){
         if(ret.x > tmax){
             break;
         }
-        float adaptive_eps = 1e-4 * ret.t; // !
+        float adaptive_eps = 1e-4 * ret.x; // !
         vec3 pos = ro + ret.x * rd;
         vec2 delta = map(pos);
         if(delta.x < adaptive_eps){
@@ -266,6 +262,10 @@ float softShadow(vec3 ro, vec3 rd, float tmin, float tmax){
     for(int i = 0; i < MAXSTEPS; ++ i){
         vec3 pos = ro + t * rd;
         float h = map(pos).x;
+        // ret = min(ret, 10 * h / t);
+        if(h < tmin/10){
+            return 0;
+        }
         float y = h*h/(2*prev_h);
         float d = sqrt(h*h - y*y);
         ret = min( ret, 10*d/max(t-y,0) );
@@ -294,7 +294,6 @@ float ambientOcc(vec3 p, vec3 n){
 vec3 render(vec3 ro, vec3 rd){
     vec3 ret_color = vec3(0);
 
-    // float t = castRay(ro, rd);
     vec2 point = castRay(ro, rd);
     float t = point.x;
     int mat_ind = int(point.y + 0.5);
@@ -310,7 +309,7 @@ vec3 render(vec3 ro, vec3 rd){
         vec3 h = normalize(l-rd);
 
         vec3 light = vec3(1.0, 0.7, 0.5);
-        float diffuse = clamp(dot(n, l), 0, 1) * softShadow(p, l, 0.01, 3.0);
+        float diffuse = clamp(dot(n, l), 0, 1) * softShadow(p+n*EPS*10, l, 0.07, 3.0);
         float specular = pow(clamp(dot(h, n), 0, 1), 150) * diffuse;
 
         ret_color = (kd*diffuse + specular) * light;
@@ -347,7 +346,7 @@ void main(){
     vec3 ro = vec3(3*sin(0.7*passedInfo.time),
                    -1.5 + 0.3*sin(0.5*passedInfo.time),
                    2*cos(0.7*passedInfo.time));
-    vec3 ta = vec3(0, -0.25, 0);
+    vec3 ta = vec3(0, -0.5, 0);
     mat3 camRot = setCamera( ro, ta, 0.0 );
     vec3 rd = camRot * normalize(vec3(uv.x, uv.y, 1));
 
