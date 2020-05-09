@@ -95,20 +95,7 @@ float sdTorus(vec3 p, vec2 t){
 }
 float sdRoundCone( vec3 p, float r, float h, float corner ){
     h -= 2*corner; r -= corner;
-    vec2 q = vec2(length(p.xz), -p.y);
-    float dist = MAXDIST;
-    vec2 m = vec2(-r, h);
-    vec2 hq = vec2(q.x, q.y-h);
-    vec2 rq = vec2(q.x-r, q.y);
-    float m_hq = dot(m, hq);
-    float m_rq = dot(m, rq);
-    float mm = dot2(m);
-    if(q.x < r && q.y < 0){
-        dist = -q.y;
-    } else {
-        dist = length(m * clamp(m_rq/mm, 0, 1) - rq);
-    }
-    return dist - corner;
+    return sdCappedRoundCone(p-vec3(0,-h/2,0), h/2, EPS, r, 0) - corner;
 }
 
 // ------------------------------------------------
@@ -117,9 +104,6 @@ float mapCream(vec3 p, vec3 bottom, vec3 offset,
                int rep, float angx, float angy, float r, float h){
     // vec3 offset (in which offset.y is the radius of the round corner)
     // int rep, float angx, float angy, float r, float h
-    // const int rep = 7;
-    // const float angx = -PI/7;
-    // const float angy = PI/10;
     float cosx = cos(angx), sinx = sin(angx);
     float cosy = cos(angy), siny = sin(angy);
     const mat3 rotx = mat3(
@@ -367,8 +351,8 @@ void main(){
     mat3 camRot = setCamera( ro, ta, 0.0 );
     vec3 rd = camRot * normalize(vec3(uv.x, uv.y, 1));
 
-    // color = render(ro, rd);
-    float t = castRay(ro, rd).x;
-    color = getNormal(ro + t * rd);
+    color = render(ro, rd);
+    // float t = castRay(ro, rd).x;
+    // color = getNormal(ro + t * rd);
     outColor = vec4(color.xyz, 1.);
 }
