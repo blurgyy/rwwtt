@@ -8,6 +8,8 @@ layout(location = 0) out vec4 outColor;
 const int MAXSTEPS = 100;
 const float MAXDIST = 1e8;
 const float EPS = 1e-5;
+const float PI = acos(-1.0);
+const float TWOPI = 2*acos(-1.0);
 
 // ------------------------------------------------
 // from: https://www.shadertoy.com/view/4tByz3
@@ -116,8 +118,15 @@ float sdRoundCone( vec3 p, float r, float h, float corner ){
 
 float mapHead(vec3 p, vec3 bottom){
     float dist = MAXDIST;
+    const int rep = 6;
+    // const mat3 rot = mat3()
+    for(int i = 0; i < rep; ++ i){
+        vec3 q = rotateY(p, TWOPI*i/rep);
+        q = q - bottom - vec3(0.1, -0.03, 0.3);
+        dist = min(dist, sdRoundCone(q, 0.16, 0.5, 0.03));
+    }
     // dist = min(dist, sdTwistedBox(p-bottom-vec3(0, -0.5, 0), vec3(0.1, 0.4, 0.1), 9));
-    dist = min(dist, sdRoundCone(p-bottom-vec3(0, -0.03, 0), 0.1, 0.5, 0.03));
+    // dist = min(dist, sdRoundCone(p-bottom-vec3(0, -0.03, 0), 0.1, 0.5, 0.03));
     return dist;
 }
 
