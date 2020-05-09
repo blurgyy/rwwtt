@@ -58,23 +58,22 @@ float sdTwistedBox(vec3 p, vec3 rad, float ext){
 float sdPlane(vec3 p){
     return -p.y;
 }
-float sdCappedCone( vec3 p, float h, float r1, float r2, float r )
+float sdCappedCone( vec3 p, float h, float r1, float r2, float corner )
 {
-    r1 -= r; r2 -= r;
+    r1 -= corner; r2 -= corner;
     vec2 q = vec2( length(p.xz), p.y );
     vec2 k1 = vec2(r2,h);
     vec2 k2 = vec2(r2-r1,2.0*h);
     vec2 ca = vec2(q.x-min(q.x,(q.y<0.0)?r1:r2), abs(q.y)-h);
     vec2 cb = q - k1 + k2*clamp( dot(k1-q,k2)/dot2(k2), 0.0, 1.0 );
     float s = (cb.x<0.0 && ca.y<0.0) ? -1.0 : 1.0;
-    return s*sqrt( min(dot2(ca),dot2(cb)) ) - r;
+    return s*sqrt( min(dot2(ca),dot2(cb)) ) - corner;
 }
 float sdBowl( vec3 p, float r, float r1, float r2 ) {
-    p.y *= -1;
     float h1 = sqrt(r*r - r1*r1);
     float h2 = sqrt(r*r - r2*r2);
     float dist = MAXDIST;
-    vec2 q = vec2(length(p.xz), p.y);
+    vec2 q = vec2(length(p.xz), -p.y);
 
     if(q.y > -h1 && q.x < r1){
         dist = q.y + h1;
@@ -91,12 +90,34 @@ float sdTorus( vec3 p, vec2 t ){
     vec2 q = vec2(length(p.xz)-t.x,p.y);
     return length(q)-t.y;
 }
+float sdRoundCone( vec3 p, float r, float h, float corner ){
+    h -= 2*corner; r -= corner;
+    vec2 q = vec2(length(p.xz), -p.y);
+    float dist = MAXDIST;
+    vec2 m = vec2(-r, h);
+    vec2 hq = vec2(q.x, q.y-h);
+    vec2 rq = vec2(q.x-r, q.y);
+    float m_hq = dot(m, hq);
+    float m_rq = dot(m, rq);
+    float mm = dot(m, m);
+    if(dot(m, hq) > 0){
+        dist = length(hq);
+    } else if(m_rq > 0){
+        dist = length(m * (m_rq / mm) - rq);
+    } else if(q.x < r){
+        dist = abs(q.y);
+    } else{
+        dist = length(rq);
+    }
+    return dist - corner;
+}
 
 // ------------------------------------------------
 
 float mapHead(vec3 p, vec3 bottom){
     float dist = MAXDIST;
     // dist = min(dist, sdTwistedBox(p-bottom-vec3(0, -0.5, 0), vec3(0.1, 0.4, 0.1), 9));
+    dist = min(dist, sdRoundCone(p-bottom-vec3(0, -0.03, 0), 0.1, 0.5, 0.03));
     return dist;
 }
 
