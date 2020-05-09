@@ -231,7 +231,7 @@ vec2 mapCone(vec3 p, out vec3 newbase, vec2 last){
     float rings = sdTorus(p-ring1_cent, ring1);
     rings = min(rings, sdTorus(p-ring2_cent, ring2));
     rings = min(rings, sdTorus(p-ring3_cent, ring3));
-    rings = min(rings, bars);
+    rings = smin(rings, bars, (ring_wid+bar_wid)/2);
     float cones = sdCappedRoundCone(p-cone1_cent, cone1_halfh, cone1_r_top, cone1_r_bot, ring_wid);
     cones = min(cones, sdCappedRoundCone(p-cone2_cent, cone2_halfh, cone2_r_top, cone2_r_bot, ring_wid));
     cones = min(cones, sdBowl(p-bowl_cent, bowl_r, bowl_r_top, bowl_r_bot));
@@ -357,7 +357,7 @@ vec3 render(vec3 ro, vec3 rd){
 
         ret_color = (kd*diffuse + specular) * light;
 
-        vec3 ambientLight = vec3(0, 0.1, 0.2);
+        vec3 ambientLight = vec3(0.2, 0.1, 0.0);
         float occ = ambientOcc(p, n);
         float AO = clamp(0.5 + 0.5 * n.y, 0, 1);
 
