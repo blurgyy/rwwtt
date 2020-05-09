@@ -34,8 +34,6 @@ vec3 rotateZ( in vec3 p, float t ){
 
 // ------------------------------------------------
 
-float lerp(float a, float b, float k){return a*(1-k) + b*k;}
-vec3 lerp(vec3 a, vec3 b, float k){return a*(1-k) + b*k;}
 float dot2(vec2 x){return dot(x, x);}
 float dot2(vec3 x){return dot(x, x);}
 
@@ -101,7 +99,7 @@ float sdRoundCone( vec3 p, float r, float h, float corner ){
     vec2 rq = vec2(q.x-r, q.y);
     float m_hq = dot(m, hq);
     float m_rq = dot(m, rq);
-    float mm = dot(m, m);
+    float mm = dot2(m);
     if(dot(m, hq) > 0){
         dist = length(hq);
     } else if(m_rq > 0){
@@ -116,17 +114,12 @@ float sdRoundCone( vec3 p, float r, float h, float corner ){
 
 // ------------------------------------------------
 
-float mapHead(vec3 p, vec3 bottom){
+float mapCream(vec3 p, vec3 bottom){
     const int rep = 7;
-    const float angx = -PI/5;
+    const float angx = -PI/7;
     const float angy = PI/10;
     float cosx = cos(angx), sinx = sin(angx);
     float cosy = cos(angy), siny = sin(angy);
-    // const mat3 rot = mat3(
-    //     co, -si, 0,
-    //     si, co, 0,
-    //      0,  0, 1
-    // );
     const mat3 rotx = mat3(
         1,  0,   0,
         0, cosx, -sinx,
@@ -143,9 +136,16 @@ float mapHead(vec3 p, vec3 bottom){
         vec3 q = rotateY(p, TWOPI*i/rep);
         q = q - bottom - vec3(0.1, -0.03, 0.3);
         q = invrot * q;
-        dist = min(dist, sdRoundCone(q, 0.14, 0.5, 0.03));
+        dist = min(dist, sdRoundCone(q, 0.14, 0.75, 0.03));
     }
     return dist;
+}
+
+// ------------------------------------------------
+
+float mapHead(vec3 p, vec3 bottom){
+    vec3 q = rotateY(p, -p.y * 5);
+    return mapCream(q, bottom);
 }
 
 vec4 mapCone(vec3 p){
@@ -177,11 +177,11 @@ vec4 mapCone(vec3 p){
     bowl_cent += cone2_top - vec3(0,bowl_h_bot,0);
     vec3 bowl_top = bowl_cent + vec3(0,bowl_h_top,0);
     vec3 bowl_bot = bowl_cent + vec3(0,bowl_h_bot,0);
-
+    // rings on cone1
     float ring_wid = 0.0075;
-    vec3 ring1_cent = lerp(cone1_top, cone1_bot, 0.25); vec2 ring1 = vec2(lerp(cone1_r_top, cone1_r_bot, 0.25), ring_wid);
-    vec3 ring2_cent = lerp(cone1_top, cone1_bot, 0.50); vec2 ring2 = vec2(lerp(cone1_r_top, cone1_r_bot, 0.50), ring_wid);
-    vec3 ring3_cent = lerp(cone1_top, cone1_bot, 0.75); vec2 ring3 = vec2(lerp(cone1_r_top, cone1_r_bot, 0.75), ring_wid);
+    vec3 ring1_cent = mix(cone1_top, cone1_bot, 0.25); vec2 ring1 = vec2(mix(cone1_r_top, cone1_r_bot, 0.25), ring_wid);
+    vec3 ring2_cent = mix(cone1_top, cone1_bot, 0.50); vec2 ring2 = vec2(mix(cone1_r_top, cone1_r_bot, 0.50), ring_wid);
+    vec3 ring3_cent = mix(cone1_top, cone1_bot, 0.75); vec2 ring3 = vec2(mix(cone1_r_top, cone1_r_bot, 0.75), ring_wid);
 
     float dist = sdTorus(p-ring1_cent, ring1);
     dist = min(dist, sdTorus(p-ring2_cent, ring2));
