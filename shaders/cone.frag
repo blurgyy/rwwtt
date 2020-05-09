@@ -117,16 +117,34 @@ float sdRoundCone( vec3 p, float r, float h, float corner ){
 // ------------------------------------------------
 
 float mapHead(vec3 p, vec3 bottom){
+    const int rep = 7;
+    const float angx = -PI/5;
+    const float angy = PI/10;
+    float cosx = cos(angx), sinx = sin(angx);
+    float cosy = cos(angy), siny = sin(angy);
+    // const mat3 rot = mat3(
+    //     co, -si, 0,
+    //     si, co, 0,
+    //      0,  0, 1
+    // );
+    const mat3 rotx = mat3(
+        1,  0,   0,
+        0, cosx, -sinx,
+        0, sinx,  cosx
+    );
+    const mat3 roty = mat3(
+        cosy, 0, -siny,
+           0, 1,     0,
+        siny, 0,  cosy
+    );
+    mat3 invrot = inverse(roty * rotx);
     float dist = MAXDIST;
-    const int rep = 6;
-    // const mat3 rot = mat3()
     for(int i = 0; i < rep; ++ i){
         vec3 q = rotateY(p, TWOPI*i/rep);
         q = q - bottom - vec3(0.1, -0.03, 0.3);
-        dist = min(dist, sdRoundCone(q, 0.16, 0.5, 0.03));
+        q = invrot * q;
+        dist = min(dist, sdRoundCone(q, 0.14, 0.5, 0.03));
     }
-    // dist = min(dist, sdTwistedBox(p-bottom-vec3(0, -0.5, 0), vec3(0.1, 0.4, 0.1), 9));
-    // dist = min(dist, sdRoundCone(p-bottom-vec3(0, -0.03, 0), 0.1, 0.5, 0.03));
     return dist;
 }
 
