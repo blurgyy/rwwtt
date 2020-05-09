@@ -109,6 +109,11 @@ float sdRoundCone( vec3 p, float r, float h, float corner ){
     h -= 2*corner; r -= corner;
     return sdCappedRoundCone(p-vec3(0,-h/2,0), h/2, EPS, r, 0) - corner;
 }
+float sdStick(vec3 p, vec3 a, vec3 b, float r){
+    vec3 ab = b - a;
+    vec3 ap = p - a;
+    return length(clamp(dot(ab, ap)/dot2(ab), 0, 1) * ab - ap) - r;
+}
 
 // ------------------------------------------------
 
@@ -136,6 +141,20 @@ float mapCream(vec3 p, vec3 bottom, vec3 offset,
         q = q - bottom - offset;
         q = invrot * q;
         dist = smin(dist, sdRoundCone(q, r, h, corner), 0.01);
+    }
+    return dist;
+}
+
+float mapBars(vec3 p, int rep, float r, float r_bot, float r_top, float h){
+    // float l = sqrt(h*h + (r_bot-r_top)*(r_bot-r_top));
+    float dist = MAXDIST;
+    for(int i = 0; i < rep; ++ i){
+        float ang = 1.0*TWOPI*i/rep;
+        float co = cos(ang);
+        float si = sin(ang);
+        vec3 bot = vec3(r_bot*co, 0, r_bot*si);
+        vec3 top = vec3(r_top*co, -h, r_top*si);
+        dist = min(dist, sdStick(p, bot, top, r));
     }
     return dist;
 }
@@ -205,10 +224,14 @@ vec2 mapCone(vec3 p, out vec3 newbase, vec2 last){
     vec3 ring1_cent = mix(cone1_top, cone1_bot, 0.25); vec2 ring1 = vec2(mix(cone1_r_top, cone1_r_bot, 0.25), ring_wid);
     vec3 ring2_cent = mix(cone1_top, cone1_bot, 0.50); vec2 ring2 = vec2(mix(cone1_r_top, cone1_r_bot, 0.50), ring_wid);
     vec3 ring3_cent = mix(cone1_top, cone1_bot, 0.75); vec2 ring3 = vec2(mix(cone1_r_top, cone1_r_bot, 0.75), ring_wid);
+    // bars on cone1
+    float bar_wid = 0.01;
 
+    float bars = mapBars(p, 7, bar_wid, cone1_r_bot, cone1_r_top, 2*cone1_halfh);
     float rings = sdTorus(p-ring1_cent, ring1);
     rings = min(rings, sdTorus(p-ring2_cent, ring2));
     rings = min(rings, sdTorus(p-ring3_cent, ring3));
+    rings = min(rings, bars);
     float cones = sdCappedRoundCone(p-cone1_cent, cone1_halfh, cone1_r_top, cone1_r_bot, ring_wid);
     cones = min(cones, sdCappedRoundCone(p-cone2_cent, cone2_halfh, cone2_r_top, cone2_r_bot, ring_wid));
     cones = min(cones, sdBowl(p-bowl_cent, bowl_r, bowl_r_top, bowl_r_bot));
@@ -223,6 +246,11 @@ vec2 mapCone(vec3 p, out vec3 newbase, vec2 last){
 }
 
 vec2 map(vec3 p){
+// float mapBars(vec3 p, int rep, float r, float r_bot, float r_top, float h){
+    // float di = mapBars(p, 5, 0.02, 0.3, 0.4, 1.0);
+    // di = min(di, sdPlane(p));
+    // float di = sdStick(p, vec3(0), vec3(-1), 0.02);
+    // return vec2(di, MAT_GROUND);
     vec2 ret = vec2(sdPlane(p), MAT_GROUND);
     vec3 cone_top;
     ret = mapCone(p, cone_top, ret);
@@ -358,13 +386,13 @@ void main(){
     vec2 uv = (gl_FragCoord.xy - .5 * passedInfo.res.xy) / passedInfo.res.y;
     vec3 color = vec3(0.);
 
-    vec3 ro = vec3(1, -1, 2);
+    // vec3 ro = vec3(1, -1, 2);
     // vec3 ro = vec3(3*sin(0.7*length(passedInfo.mouse)*0.01),
     //                -1.5 + 0.3*sin(0.5*length(passedInfo.mouse)*0.01),
     //                2*cos(0.7*length(passedInfo.mouse)*0.01));
-    // vec3 ro = vec3(3*sin(0.7*passedInfo.time),
-    //                -1.5 + 0.3*sin(0.5*passedInfo.time),
-    //                2*cos(0.7*passedInfo.time));
+    vec3 ro = vec3(3*sin(0.7*passedInfo.time),
+                   -1.5 + 0.3*sin(0.5*passedInfo.time),
+                   2*cos(0.7*passedInfo.time));
     vec3 ta = vec3(0, -0.5, 0);
     mat3 camRot = setCamera( ro, ta, 0.0 );
     // vec3 rd = camRot * normalize(vec3(uv.x, uv.y, 1));
