@@ -21,11 +21,11 @@ const int AA = 1;
 #define MAT_CANDY_3 5
 #define MAT_CANDY_4 6
 #define MAT_CANDY_5 7
-#define MAT_CANDY_6 MAT_CANDY_1
-#define MAT_CANDY_7 MAT_CANDY_3
+#define MAT_CANDY_6 MAT_CANDY_4
+#define MAT_CANDY_7 MAT_CANDY_1
 #define MAT_CANDY_8 MAT_CANDY_2
 #define MAT_CANDY_9 MAT_CANDY_5
-#define MAT_CANDY_0 MAT_CANDY_4
+#define MAT_CANDY_0 MAT_CANDY_3
 #define CANDY_RN    0.65
 
 struct Material{
