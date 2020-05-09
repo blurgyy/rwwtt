@@ -95,6 +95,7 @@ float mapCone(vec3 p){
     cone2_top += cone1_top;
     cone2_bot += cone1_top;
 
+
     float ring_wid = 0.0075;
     vec3 ring1_cent = lerp(cone1_top, cone1_bot, 0.25); vec2 ring1 = vec2(lerp(cone1_r_top, cone1_r_bot, 0.25), ring_wid);
     vec3 ring2_cent = lerp(cone1_top, cone1_bot, 0.50); vec2 ring2 = vec2(lerp(cone1_r_top, cone1_r_bot, 0.50), ring_wid);

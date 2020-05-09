@@ -11,7 +11,7 @@ void Application::initWindow(){
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     // glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-    window = glfwCreateWindow(window_width, window_height, "vulkanTest", nullptr, nullptr);
+    window = glfwCreateWindow(window_width, window_height, "Cone", nullptr, nullptr);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
@@ -339,7 +339,8 @@ void Application::createDescriptorSetLayout(){
 void Application::createGraphicsPipeline(){
     auto vertexShaderCode = readFile("../shaders/vert.spv");
     // auto fragShaderCode = readFile("../shaders/frag.spv");
-    auto fragShaderCode = readFile("../shaders/vader.spv");
+    // auto fragShaderCode = readFile("../shaders/vader.spv");
+    auto fragShaderCode = readFile("../shaders/cone.spv");
     VkShaderModule vertShaderModule = createShaderModule(vertexShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
 
