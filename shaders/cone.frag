@@ -11,22 +11,18 @@ const float EPS = 1e-5;
 const float PI = acos(-1.0);
 const float TWOPI = 2*acos(-1.0);
 
-#define M_CONE  0
-#define M_CREAM 1
-#define M_PLANE 2
+#define MAT_CONE  0
+#define MAT_CREAM 1
+#define MAT_PLANE 2
 
 struct Material{
     vec3 kd;
 };
-const Material m_cone =  Material(
-    vec3(0.8627, 0.6510, 0.3255)
-);
-const Material m_cream = Material(
-    vec3(0.9255, 0.9294, 0.8510)
-);
-const Material m_plane = Material(
-    vec3(0.9451, 0.9451, 0.9451)
-);
+const Material materials[] =  {
+    Material(vec3(0.8627, 0.6510, 0.3255)), // cone
+    Material(vec3(0.9255, 0.9294, 0.8510)), // cream
+    Material(vec3(0.9451, 0.9451, 0.9451))  // plane
+};
 
 // ------------------------------------------------
 // from: https://www.shadertoy.com/view/4tByz3
@@ -156,7 +152,7 @@ float mapCream(vec3 p, vec3 bottom, vec3 offset,
 
 // ------------------------------------------------
 
-float mapHead(vec3 p, vec3 bottom){
+vec2 mapHead(vec3 p, vec3 bottom, vec2 last){
     vec3 q_top = rotateY(p, -p.y * 6);
     vec3 q_bot = rotateY(p, -p.y * 5);
     // vec3 q = p;
@@ -178,10 +174,16 @@ float mapHead(vec3 p, vec3 bottom){
     float dist = mapCream(q_bot, bottom, offset_bot, rep_bot, x_bot, y_bot, r_bot, h_bot);
     bottom += -h_bot * cos(x_bot) + vec3(0, 0.05, 0);
     dist = smin(dist, mapCream(q_top, bottom, offset_top, rep_top, x_top, y_top, r_top, h_top), 0.05);
-    return dist;
+    vec2 ret = last;
+    if(dist < ret.x){
+        ret.x = smin(ret.x, dist, 0.01);
+        // ret.x = dist;
+        ret.y = MAT_CREAM;
+    }
+    return ret;
 }
 
-vec4 mapCone(vec3 p){
+vec2 mapCone(vec3 p, out vec3 newbase, vec2 last){
     // cone1
     vec3 cone1_cent = vec3(0, -0.23, 0);
     vec3 cone1_top = 2*cone1_cent;
@@ -222,50 +224,59 @@ vec4 mapCone(vec3 p){
     dist = smin(dist, sdCappedRoundCone(p-cone1_cent, cone1_halfh, cone1_r_top, cone1_r_bot, ring_wid), ring_wid);
     dist = min(dist, sdCappedRoundCone(p-cone2_cent, cone2_halfh, cone2_r_top, cone2_r_bot, ring_wid));
     dist = min(dist, sdBowl(p-bowl_cent, bowl_r, bowl_r_top, bowl_r_bot));
-    return vec4(dist, bowl_top);
+    vec2 ret = last;
+    if(dist < ret.x){
+        ret.x = dist;
+        ret.y = MAT_CONE;
+    }
+    newbase = bowl_top;
+    return ret;
 }
 
-float map(vec3 p){
-    vec3 body_center = vec3(0, -0.25, 0);
-    vec3 q = vec3(fract(p.x + 0.5) - 0.5, p.yz);
-    vec4 dtop = mapCone(p);
-    vec3 cone_top = dtop.yzw;
-    float dist = dtop.x;
-    dist = smin(dist, mapHead(p, cone_top), 0.01);
-    dist = min(dist, sdPlane(p));
-    return dist;
+vec2 map(vec3 p){
+    vec2 ret = vec2(sdPlane(p), MAT_PLANE);
+    vec3 cone_top;
+    ret = mapCone(p, cone_top, ret);
+    float dist = ret.x;
+    ret = mapHead(p, cone_top, ret);
+    // dist = smin(dist, mapHead(p, cone_top), 0.01);
+    // dist = min(dist, sdPlane(p));
+    return ret;
 }
 
 vec3 getNormal(vec3 p){
     vec2 eps = vec2(EPS, 0);
     vec3 n = vec3(
-    	map(p + eps.xyy) - map(p - eps.xyy),
-        map(p + eps.yxy) - map(p - eps.yxy),
-        map(p + eps.yyx) - map(p - eps.yyx));
+    	map(p + eps.xyy).x - map(p - eps.xyy).x,
+        map(p + eps.yxy).x - map(p - eps.yxy).x,
+        map(p + eps.yyx).x - map(p - eps.yyx).x);
     return normalize(n);
 }
 
-float castRay(vec3 ro, vec3 rd){
+vec2 castRay(vec3 ro, vec3 rd){
     float tmin = 1.0;
     float tmax = MAXDIST;
 
-    float t = tmin;
+    // float t = tmin;
+    vec2 ret = vec2(tmin, -1.0);
     for(int i = 0; i < MAXSTEPS; ++ i){
-        if(t > tmax){
+        if(ret.x > tmax){
             break;
         }
-        float adaptive_eps = 1e-4 * t; // !
-        vec3 pos = ro + t * rd;
-        float delta = map(pos);
-        if(delta < adaptive_eps){
+        float adaptive_eps = 1e-4 * ret.t; // !
+        vec3 pos = ro + ret.x * rd;
+        vec2 delta = map(pos);
+        if(delta.x < adaptive_eps){
             break;
         }
-        t += delta;
+        ret.x += delta.x;
+        ret.y = delta.y;
     }
-    if(t > tmax){
-        t = -1.0;
+    if(ret.x > tmax){
+        ret.x = -1.0;
+        ret.y = -1.0;
     }
-    return t;
+    return ret;
 }
 
 float softShadow(vec3 ro, vec3 rd, float tmin, float tmax){
@@ -275,7 +286,7 @@ float softShadow(vec3 ro, vec3 rd, float tmin, float tmax){
     float prev_h = 1e20;
     for(int i = 0; i < MAXSTEPS; ++ i){
         vec3 pos = ro + t * rd;
-        float h = map(pos);
+        float h = map(pos).x;
         float y = h*h/(2*prev_h);
         float d = sqrt(h*h - y*y);
         ret = min( ret, 10*d/max(t-y,0) );
@@ -293,7 +304,7 @@ float ambientOcc(vec3 p, vec3 n){
     float scalar = 1;
     for(int i = 0; i < 5; ++ i){
         float h = EPS + 0.15 * i;
-        float d = map(p + h*n);
+        float d = map(p + h*n).x;
         occ += (h-d) * scalar;
         scalar *= 0.5;
     }
@@ -304,13 +315,17 @@ float ambientOcc(vec3 p, vec3 n){
 vec3 render(vec3 ro, vec3 rd){
     vec3 ret_color = vec3(0);
 
-    float t = castRay(ro, rd);
+    // float t = castRay(ro, rd);
+    vec2 point = castRay(ro, rd);
+    float t = point.x;
+    int mat_ind = int(point.y + 0.5);
 
-    if(t > 0.5){
+    if(t > -0.5){
         vec3 p = ro + t * rd;
         vec3 n = getNormal(p);
 
-        vec3 kd = vec3(0.3);
+        // vec3 kd = vec3(0.3);
+        vec3 kd = materials[mat_ind].kd;
 
         vec3 l = normalize(vec3(-1, -3, -5)); // parallel light rays
         vec3 h = normalize(l-rd);
