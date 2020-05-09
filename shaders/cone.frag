@@ -60,6 +60,7 @@ float sdPlane(vec3 p){
 }
 float sdCappedCone( vec3 p, float h, float r1, float r2, float r )
 {
+    r1 -= r; r2 -= r;
     vec2 q = vec2( length(p.xz), p.y );
     vec2 k1 = vec2(r2,h);
     vec2 k2 = vec2(r2-r1,2.0*h);
@@ -67,6 +68,24 @@ float sdCappedCone( vec3 p, float h, float r1, float r2, float r )
     vec2 cb = q - k1 + k2*clamp( dot(k1-q,k2)/dot2(k2), 0.0, 1.0 );
     float s = (cb.x<0.0 && ca.y<0.0) ? -1.0 : 1.0;
     return s*sqrt( min(dot2(ca),dot2(cb)) ) - r;
+}
+float sdBowl( vec3 p, float r, float r1, float r2 ) {
+    p.y *= -1;
+    float h1 = sqrt(r*r - r1*r1);
+    float h2 = sqrt(r*r - r2*r2);
+    float dist = MAXDIST;
+    vec2 q = vec2(length(p.xz), p.y);
+
+    if(q.y > -h1 && q.x < r1){
+        dist = q.y + h1;
+    } else if(q.y * r1 > -h1 * q.x){
+        dist = length(q - vec2(r1, -h1));
+    } else if(q.y < -h2 && q.x < r2){
+        dist = -h2 - q.y;
+    } else {
+        dist = min(length(q-vec2(r2, -h2)), length(q)-r);
+    }
+    return dist;
 }
 float sdTorus( vec3 p, vec2 t ){
     vec2 q = vec2(length(p.xz)-t.x,p.y);
@@ -79,12 +98,14 @@ float sdConePlane(vec3 p, float h, float r1, float r2, float thick){
 // ------------------------------------------------
 
 float mapCone(vec3 p){
-    vec3 cone1_cent = vec3(0, -0.22, 0);
+    // cone1
+    vec3 cone1_cent = vec3(0, -0.23, 0);
     vec3 cone1_top = 2*cone1_cent;
     vec3 cone1_bot = vec3(0, 0, 0);
     float cone1_r_top = 0.25,
           cone1_r_bot = 0.2,
           cone1_halfh = abs(cone1_cent.y);
+    // cone2
     vec3 cone2_cent = vec3(0, -0.02, 0);
     vec3 cone2_top = 2*cone2_cent;
     vec3 cone2_bot = vec3(0, 0, 0);
@@ -94,7 +115,17 @@ float mapCone(vec3 p){
     cone2_cent += cone1_top;
     cone2_top += cone1_top;
     cone2_bot += cone1_top;
-
+    // bowl
+    vec3 bowl_cent = vec3(0);
+    float bowl_r = cone1_r_top * 1.3,
+          bowl_r_top = bowl_r * 0.99,
+          bowl_r_bot = bowl_r * 0.78,
+          bowl_h_top = sqrt(bowl_r*bowl_r - bowl_r_top*bowl_r_top),
+          bowl_h_bot = sqrt(bowl_r*bowl_r - bowl_r_bot*bowl_r_bot),
+          bowl_h = abs(bowl_h_bot - bowl_h_top);
+    bowl_cent += cone2_top - vec3(0,bowl_h_bot,0);
+    vec3 bowl_top = bowl_cent + vec3(0,bowl_h_top,0);
+    vec3 bowl_bot = bowl_cent + vec3(0,bowl_h_bot,0);
 
     float ring_wid = 0.0075;
     vec3 ring1_cent = lerp(cone1_top, cone1_bot, 0.25); vec2 ring1 = vec2(lerp(cone1_r_top, cone1_r_bot, 0.25), ring_wid);
@@ -105,8 +136,9 @@ float mapCone(vec3 p){
     dist = min(dist, sdTorus(p-ring2_cent, ring2));
     dist = min(dist, sdTorus(p-ring3_cent, ring3));
     // dist = min(dist, sdCappedCone(p, cone1_top, cone1_bot, cone1_r_top, cone1_r_bot));
-    dist = min(dist, sdCappedCone(p-cone1_cent, cone1_halfh, cone1_r_top-ring_wid, cone1_r_bot-ring_wid, ring_wid));
-    dist = min(dist, sdCappedCone(p-cone2_cent, cone2_halfh, cone2_r_top-ring_wid, cone2_r_bot-ring_wid, ring_wid));
+    dist = min(dist, sdCappedCone(p-cone1_cent, cone1_halfh, cone1_r_top, cone1_r_bot, ring_wid));
+    dist = min(dist, sdCappedCone(p-cone2_cent, cone2_halfh, cone2_r_top, cone2_r_bot, ring_wid));
+    dist = min(dist, sdBowl(p-bowl_cent, bowl_r, bowl_r_top, bowl_r_bot));
     return dist;
 }
 
@@ -253,9 +285,9 @@ void main(){
     vec2 uv = (gl_FragCoord.xy - .5 * passedInfo.res.xy) / passedInfo.res.y;
     vec3 col = vec3(0.);
 
-    vec3 ro = vec3(4*sin(0.3*passedInfo.time),
-                   -2 + 0.3*sin(0.1*passedInfo.time),
-                   2*cos(0.3*passedInfo.time));
+    vec3 ro = vec3(3*sin(0.7*passedInfo.time),
+                   -1.5 + 0.3*sin(0.5*passedInfo.time),
+                   2*cos(0.7*passedInfo.time));
     // vec3 ro = vec3(-1, -1, -2);
     vec3 ta = vec3(0, -0.25, 0);
     // vec3 ta = vec3(passedInfo.time, -0.25, 0);
