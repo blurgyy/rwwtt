@@ -32,6 +32,13 @@ vec3 rotateZ( in vec3 p, float t ){
 
 // ------------------------------------------------
 
+float lerp(float a, float b, float k){return a*(1-k) + b*k;}
+vec3 lerp(vec3 a, vec3 b, float k){return a*(1-k) + b*k;}
+float dot2(vec2 x){return dot(x, x);}
+float dot2(vec3 x){return dot(x, x);}
+
+// ------------------------------------------------
+
 float sdSphere(vec3 p, vec4 sph){
     p -= sph.xyz;
     return length(p) - sph.w;
@@ -51,17 +58,73 @@ float sdTwistedBox(vec3 p, vec3 rad){
 float sdPlane(vec3 p){
     return -p.y;
 }
+float sdCappedCone( vec3 p, float h, float r1, float r2, float r )
+{
+    vec2 q = vec2( length(p.xz), p.y );
+    vec2 k1 = vec2(r2,h);
+    vec2 k2 = vec2(r2-r1,2.0*h);
+    vec2 ca = vec2(q.x-min(q.x,(q.y<0.0)?r1:r2), abs(q.y)-h);
+    vec2 cb = q - k1 + k2*clamp( dot(k1-q,k2)/dot2(k2), 0.0, 1.0 );
+    float s = (cb.x<0.0 && ca.y<0.0) ? -1.0 : 1.0;
+    return s*sqrt( min(dot2(ca),dot2(cb)) ) - r;
+}
+float sdTorus( vec3 p, vec2 t ){
+    vec2 q = vec2(length(p.xz)-t.x,p.y);
+    return length(q)-t.y;
+}
+float sdConePlane(vec3 p, float h, float r1, float r2, float thick){
+    return 1.;
+}
 
 // ------------------------------------------------
 
+float mapCone(vec3 p){
+    vec3 cone1_cent = vec3(0, -0.22, 0);
+    vec3 cone1_top = 2*cone1_cent;
+    vec3 cone1_bot = vec3(0, 0, 0);
+    float cone1_r_top = 0.25,
+          cone1_r_bot = 0.2,
+          cone1_halfh = abs(cone1_cent.y);
+    vec3 cone2_cent = vec3(0, -0.02, 0);
+    vec3 cone2_top = 2*cone2_cent;
+    vec3 cone2_bot = vec3(0, 0, 0);
+    float cone2_r_top = cone1_r_top * 0.95,
+          cone2_r_bot = cone1_r_top * 1.07,
+          cone2_halfh = abs(cone2_cent.y);
+    cone2_cent += cone1_top;
+    cone2_top += cone1_top;
+    cone2_bot += cone1_top;
+
+    float ring_wid = 0.0075;
+    vec3 ring1_cent = lerp(cone1_top, cone1_bot, 0.25); vec2 ring1 = vec2(lerp(cone1_r_top, cone1_r_bot, 0.25), ring_wid);
+    vec3 ring2_cent = lerp(cone1_top, cone1_bot, 0.50); vec2 ring2 = vec2(lerp(cone1_r_top, cone1_r_bot, 0.50), ring_wid);
+    vec3 ring3_cent = lerp(cone1_top, cone1_bot, 0.75); vec2 ring3 = vec2(lerp(cone1_r_top, cone1_r_bot, 0.75), ring_wid);
+
+    float dist = sdTorus(p-ring1_cent, ring1);
+    dist = min(dist, sdTorus(p-ring2_cent, ring2));
+    dist = min(dist, sdTorus(p-ring3_cent, ring3));
+    // dist = min(dist, sdCappedCone(p, cone1_top, cone1_bot, cone1_r_top, cone1_r_bot));
+    dist = min(dist, sdCappedCone(p-cone1_cent, cone1_halfh, cone1_r_top-ring_wid, cone1_r_bot-ring_wid, ring_wid));
+    dist = min(dist, sdCappedCone(p-cone2_cent, cone2_halfh, cone2_r_top-ring_wid, cone2_r_bot-ring_wid, ring_wid));
+    return dist;
+}
+
 float map(vec3 p){
+    vec3 body_center = vec3(0, -0.25, 0);
     vec3 q = vec3(fract(p.x + 0.5) - 0.5, p.yz);
-    return min(
-        sdBox(q-vec3(0, -0.25, 0), vec3(0.2, 0.25, 0.2)),
-        // sdRoundBox(q-vec3(0, -0.25, 0), vec3(0.2, 0.15, 0.2), 0.1),
-        // sdTwistedBox(q-vec3(0, -0.25, 0), vec3(0.2, 0.25, 0.2)),
-        sdPlane(p)
-    );
+    float dist = mapCone(p);
+    dist = min(dist, sdPlane(p));
+    // dist = min(dist, sdBox(q-body_center, vec3(0.2, 0.25, 0.2)));
+    return dist;
+    // min(
+    //     sdBox(q-body_center, vec3(0.2, 0.25, 0.2)),
+    //     // sdRoundBox(q-body_center, vec3(0.2, 0.15, 0.2), 0.1),
+    //     // sdTwistedBox(q-body_center, vec3(0.2, 0.25, 0.2)),
+    //     // sdCappedCone(p-body_center, vec3(0, -0.5, 0), vec3(0, 0, 0), 0.3, 0.2),
+    //     // sdTorus(p-body_center, vec2(0.5, 0.1)),
+    //     mapCone(p),
+    //     sdPlane(p)
+    // );
 }
 
 vec3 getNormal(vec3 p){
