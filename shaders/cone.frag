@@ -100,14 +100,10 @@ float sdRoundCone( vec3 p, float r, float h, float corner ){
     float m_hq = dot(m, hq);
     float m_rq = dot(m, rq);
     float mm = dot2(m);
-    if(dot(m, hq) > 0){
-        dist = length(hq);
-    } else if(m_rq > 0){
-        dist = length(m * (m_rq / mm) - rq);
-    } else if(q.x < r){
-        dist = abs(q.y);
-    } else{
-        dist = length(rq);
+    if(q.x < r && q.y < 0){
+        dist = -q.y;
+    } else {
+        dist = length(m * clamp(m_rq/mm, 0, 1) - rq);
     }
     return dist - corner;
 }
