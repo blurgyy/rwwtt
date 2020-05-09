@@ -61,23 +61,18 @@ float dot2(vec3 x){return dot(x, x);}
 float sdPlane(vec3 p){
     return -p.y;
 }
-float sdCappedRoundCone(vec3 p, float h, float r1, float r2, float corner)
-{
+float sdCappedRoundCone(vec3 p, float h, float r1, float r2, float corner){
+    // reference: https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
     vec2 q = vec2(length(p.xz), -p.y);
-    vec2 a = vec2(r1, h);
     vec2 b = vec2(r2, -h);
-    vec2 m = a - b;
-    vec2 bq = q - b;
-    float mm = dot2(m);
-    float dist = MAXDIST;
-    if(q.y > h && q.x < r1 || q.y < -h && q.x < r2){
-        dist = abs(q.y) - h;
-    } else {
-        dist = length(m * clamp(dot(bq,m)/mm, 0, 1) - bq);
-    }
-    return dist;
+    vec2 m = vec2(r1-r2, 2.0*h);
+    vec2 hor = vec2(q.x-min(q.x, (q.y<0.0)?r2:r1), abs(q.y)-h);
+    vec2 ver = b-q + m * clamp(dot(q-b, m)/dot2(m), 0, 1);
+    // check if p is inside the cone
+    float s = (ver.x>0.0 && hor.y<0.0) ? -1.0 : 1.0;
+    return s*sqrt( min(dot2(hor),dot2(ver)) );
 }
-float sdBowl( vec3 p, float r, float r1, float r2 ) {
+float sdBowl(vec3 p, float r, float r1, float r2){
     float h1 = sqrt(r*r - r1*r1);
     float h2 = sqrt(r*r - r2*r2);
     float dist = MAXDIST;
@@ -372,6 +367,8 @@ void main(){
     mat3 camRot = setCamera( ro, ta, 0.0 );
     vec3 rd = camRot * normalize(vec3(uv.x, uv.y, 1));
 
-    color = render(ro, rd);
+    // color = render(ro, rd);
+    float t = castRay(ro, rd).x;
+    color = getNormal(ro + t * rd);
     outColor = vec4(color.xyz, 1.);
 }
