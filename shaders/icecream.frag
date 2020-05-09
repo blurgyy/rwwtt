@@ -11,11 +11,18 @@ const float MAXDIST = 1e8;
 const float EPS = 1e-5;
 const float PI = acos(-1.0);
 const float TWOPI = 2*acos(-1.0);
-const int AA = 2;
+const int AA = 1;
 
-#define MAT_CONE  0
-#define MAT_CREAM 1
-#define MAT_GROUND 2
+#define MAT_CONE    0
+#define MAT_CREAM   1
+#define MAT_GROUND  2
+#define MAT_CANDY_1 MAT_GROUND
+#define MAT_CANDY_2 MAT_GROUND
+#define MAT_CANDY_3 MAT_GROUND
+#define MAT_CANDY_4 MAT_GROUND
+#define MAT_CANDY_5 MAT_GROUND
+#define MAT_CANDY_6 MAT_GROUND
+#define MAT_CANDY_7 MAT_GROUND
 
 struct Material{
     vec3 kd;            // color
@@ -67,6 +74,27 @@ float smin( float a, float b, float k ){
 
 float dot2(vec2 x){return dot(x, x);}
 float dot2(vec3 x){return dot(x, x);}
+mat3 rot3x(float ang){
+    float co = cos(ang), si = sin(ang);
+    return mat3(1, 0, 0,
+                0, co, -si,
+                0, si, co);
+}
+mat3 rot3y(float ang){
+    float co = cos(ang), si = sin(ang);
+    return mat3(co, 0, -si,
+                0, 1, 0,
+                si, 0, co);
+}
+mat3 rot3z(float ang){
+    float co = cos(ang), si = sin(ang);
+    return mat3(co, -si, 0,
+                si, co, 0,
+                0, 0, 1);
+}
+mat3 rot3(float x, float y, float z){
+    return rot3z(z) * rot3y(y) * rot3x(x);
+}
 
 // ------------------------------------------------
 
@@ -114,6 +142,12 @@ float sdStick(vec3 p, vec3 a, vec3 b, float r){
     vec3 ap = p - a;
     return length(clamp(dot(ab, ap)/dot2(ab), 0, 1) * ab - ap) - r;
 }
+float sdRoundBox(vec3 p, vec4 shape){
+    float corner = shape.w;
+    shape.xyz = max(shape.xyz - corner, 0);
+    vec3 q = abs(p) - shape.xyz;
+    return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - corner;
+}
 
 // ------------------------------------------------
 
@@ -160,6 +194,76 @@ float mapBars(vec3 p, int rep, float r, float r_bot, float r_top, float h){
 }
 
 // ------------------------------------------------
+
+vec2 mapCandy(vec3 p, vec3 cone_top, vec2 last){
+    const vec4 shape = vec4(0.02, 0.03, 0.01, 0.007);
+    vec3 cent1 = vec3(0.12, -1, 16);
+    vec3 cent2 = vec3(0.06, -1.2, -0.08);
+    vec3 cent5 = vec3(-0.06, -1.1, -0.11);
+    vec3 cent6 = vec3(0.168, -0.95, -0.156);
+    vec3 cent7 = vec3(0.01, -0.94, 0.19);
+    vec3 cent3 = vec3(-0.16, -0.9, 0.11);
+    vec3 cent4 = vec3(-0.2, -0.84, -0.2);
+    // TODO: 3x floating candies
+    vec3 cent8 = vec3(1, -1, 0);
+    vec3 cent9 = vec3(1, -1, 0);
+    vec3 cent0 = vec3(1, -1, 0);
+
+    vec2 ret = last;
+    float dist = MAXDIST;
+    vec3 q = p;
+    // candy #1
+    q = inverse(rot3(12, 42, 61))*(p-cent1);
+    dist = min(dist, sdRoundBox(q, shape));
+    if(dist < ret.x){
+        ret.x = dist;
+        ret.y = MAT_CANDY_1;
+    }
+    // candy #2
+    q = inverse(rot3(56, 21, 30))*(p-cent2);
+    dist = min(dist, sdRoundBox(q, shape));
+    if(dist < ret.x){
+        ret.x = dist;
+        ret.y = MAT_CANDY_2;
+    }
+    // candy #3
+    q = inverse(rot3(36, 50, 28))*(p-cent3);
+    dist = min(dist, sdRoundBox(q, shape));
+    if(dist < ret.x){
+        ret.x = dist;
+        ret.y = MAT_CANDY_3;
+    }
+    // candy #4
+    q = inverse(rot3(26, 75, 32))*(p-cent4);
+    dist = min(dist, sdRoundBox(q, shape));
+    if(dist < ret.x){
+        ret.x = dist;
+        ret.y = MAT_CANDY_4;
+    }
+    // candy #5
+    q = inverse(rot3(34, 49, 29))*(p-cent5);
+    dist = min(dist, sdRoundBox(q, shape));
+    if(dist < ret.x){
+        ret.x = dist;
+        ret.y = MAT_CANDY_5;
+    }
+    // candy #6
+    q = inverse(rot3(12, 28, 54))*(p-cent6);
+    dist = min(dist, sdRoundBox(q, shape));
+    if(dist < ret.x){
+        ret.x = dist;
+        ret.y = MAT_CANDY_6;
+    }
+    // candy #7
+    q = inverse(rot3(75, 83, 60))*(p-cent7);
+    dist = min(dist, sdRoundBox(q, shape));
+    if(dist < ret.x){
+        ret.x = dist;
+        ret.y = MAT_CANDY_7;
+    }
+    return ret;
+    // return MAXDIST;
+}
 
 vec2 mapHead(vec3 p, vec3 bottom, vec2 last){
     vec3 q_top = rotateY(p, -p.y * 6);
@@ -250,12 +354,14 @@ vec2 map(vec3 p){
     // float di = mapBars(p, 5, 0.02, 0.3, 0.4, 1.0);
     // di = min(di, sdPlane(p));
     // float di = sdStick(p, vec3(0), vec3(-1), 0.02);
+    // float di = mapCandy(p);
     // return vec2(di, MAT_GROUND);
     vec2 ret = vec2(sdPlane(p), MAT_GROUND);
     vec3 cone_top;
     ret = mapCone(p, cone_top, ret);
     float dist = ret.x;
     ret = mapHead(p, cone_top, ret);
+    ret = mapCandy(p, cone_top, ret);
     // dist = smin(dist, mapHead(p, cone_top), 0.01);
     // dist = min(dist, sdPlane(p));
     return ret;
@@ -386,12 +492,12 @@ void main(){
     vec2 uv = (gl_FragCoord.xy - .5 * passedInfo.res.xy) / passedInfo.res.y;
     vec3 color = vec3(0.);
 
-    // vec3 ro = vec3(1, -1, 2);
+    // vec3 ro = vec3(1, -1.5, 1);
     // vec3 ro = vec3(3*sin(0.7*length(passedInfo.mouse)*0.01),
     //                -1.5 + 0.3*sin(0.5*length(passedInfo.mouse)*0.01),
     //                2*cos(0.7*length(passedInfo.mouse)*0.01));
     vec3 ro = vec3(3*sin(0.7*passedInfo.time),
-                   -1.5 + 0.3*sin(0.5*passedInfo.time),
+                   -1.5 + 0.1*sin(0.5*passedInfo.time),
                    2*cos(0.7*passedInfo.time));
     vec3 ta = vec3(0, -0.5, 0);
     mat3 camRot = setCamera( ro, ta, 0.0 );
