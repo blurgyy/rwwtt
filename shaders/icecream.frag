@@ -205,12 +205,13 @@ vec2 mapCone(vec3 p, out vec3 newbase, vec2 last){
     vec3 ring2_cent = mix(cone1_top, cone1_bot, 0.50); vec2 ring2 = vec2(mix(cone1_r_top, cone1_r_bot, 0.50), ring_wid);
     vec3 ring3_cent = mix(cone1_top, cone1_bot, 0.75); vec2 ring3 = vec2(mix(cone1_r_top, cone1_r_bot, 0.75), ring_wid);
 
-    float dist = sdTorus(p-ring1_cent, ring1);
-    dist = min(dist, sdTorus(p-ring2_cent, ring2));
-    dist = min(dist, sdTorus(p-ring3_cent, ring3));
-    dist = smin(dist, sdCappedRoundCone(p-cone1_cent, cone1_halfh, cone1_r_top, cone1_r_bot, ring_wid), ring_wid);
-    dist = min(dist, sdCappedRoundCone(p-cone2_cent, cone2_halfh, cone2_r_top, cone2_r_bot, ring_wid));
-    dist = min(dist, sdBowl(p-bowl_cent, bowl_r, bowl_r_top, bowl_r_bot));
+    float rings = sdTorus(p-ring1_cent, ring1);
+    rings = min(rings, sdTorus(p-ring2_cent, ring2));
+    rings = min(rings, sdTorus(p-ring3_cent, ring3));
+    float cones = sdCappedRoundCone(p-cone1_cent, cone1_halfh, cone1_r_top, cone1_r_bot, ring_wid);
+    cones = min(cones, sdCappedRoundCone(p-cone2_cent, cone2_halfh, cone2_r_top, cone2_r_bot, ring_wid));
+    cones = min(cones, sdBowl(p-bowl_cent, bowl_r, bowl_r_top, bowl_r_bot));
+    float dist = smin(rings, cones, ring_wid);
     vec2 ret = last;
     if(dist < ret.x){
         ret.x = dist;
@@ -317,7 +318,8 @@ vec3 render(vec3 ro, vec3 rd){
         vec3 kd = materials[mat_id].kd;
         float pn = exp2(10*(1-materials[mat_id].rn));
 
-        vec3 l = normalize(vec3(-1, -3, -5)); // parallel light rays
+        // vec3 l = normalize(vec3(-1, -3, -5)); // parallel light rays
+        vec3 l = normalize(vec3(-4, -3, 1)); // parallel light rays
         vec3 h = normalize(l-rd);
 
         vec3 light = vec3(1.0, 0.7, 0.5)/1.2;
@@ -355,9 +357,10 @@ void main(){
     vec2 uv = (gl_FragCoord.xy - .5 * passedInfo.res.xy) / passedInfo.res.y;
     vec3 color = vec3(0.);
 
-    vec3 ro = vec3(3*sin(0.7*passedInfo.time),
-                   -1.5 + 0.3*sin(0.5*passedInfo.time),
-                   2*cos(0.7*passedInfo.time));
+    vec3 ro = vec3(1, -1, 2);
+    // vec3 ro = vec3(3*sin(0.7*passedInfo.time),
+    //                -1.5 + 0.3*sin(0.5*passedInfo.time),
+    //                2*cos(0.7*passedInfo.time));
     vec3 ta = vec3(0, -0.5, 0);
     mat3 camRot = setCamera( ro, ta, 0.0 );
     // vec3 rd = camRot * normalize(vec3(uv.x, uv.y, 1));
