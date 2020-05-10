@@ -103,7 +103,7 @@
         \begin{column}{.6\textwidth}
             \begin{itemize}
                 \item 以 Y 轴为中心对称
-                \item \texttt{vec3 q = vec3(length(p.xz), p.y)}
+                \item \texttt{vec3 q = vec3(length(p.xz), p.y);}
                 \item 梯形
             \end{itemize}
         \end{column}
@@ -123,7 +123,7 @@
     % \begin{column}{.1\textwidth}\end{column}
         \begin{column}{.6\textwidth}
             \begin{itemize}
-                \item \texttt{vec3 q = vec3(length(p.xz), p.y)}
+                \item \texttt{vec3 q = vec3(length(p.xz), p.y);}
                 \item 圆 (部分)
             \end{itemize}
         \end{column}
@@ -151,17 +151,81 @@
     \end{figure}
 \end{frame}
 \begin{frame}
-    \frametitle{组装}
+    \frametitle{组合}
     \begin{figure}[htbp]
         \centering
         \includegraphics[height=.75\textheight]{images/pre/cone/final.pdf}
-        \caption{甜筒模型}
+        \caption{甜筒}
         \label{fig:cone_model}
     \end{figure}
 \end{frame}
 %************************%
 \subsection{奶油}
-
+\begin{frame}
+    \frametitle{分解} % frame title
+    \begin{columns}
+    \begin{column}{.1\textwidth}\end{column}
+        \begin{column}{.4\textwidth}
+            \begin{itemize}
+                \item 辐射状排列的锥形
+                \item 分两层
+                \item smooth blending % 模拟奶油
+            \end{itemize}
+        \end{column}
+        \begin{column}{.5\textwidth}
+            \includegraphics[width=128pt]{images/pre/emoji.pdf}
+        \end{column}
+    \end{columns}
+\end{frame}
+\begin{frame}
+    \frametitle{锥形}
+    \begin{itemize}
+        \item 顶部半径为 0 的\underline{圆台}
+        \item \texttt{dist\_cone = CappedCone(h, EPS, r);}
+        \item 平滑的角: \\
+        \texttt{dist\_cone = CappedCone(h, EPS, r) - corner;}
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{旋转重复}
+    \begin{itemize}
+        \item 变换自身位置以求得不同的距离场
+        \item \texttt{vec3 q = rotateY(p, TWOPI*i/rep);}
+        \item \texttt{dist = min(dist, Cone(q, h, r));}
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{两层奶油}
+    \begin{block}{下层}
+        \begin{figure}[htbp]
+            \centering
+            \includegraphics[height=.3\textheight]{images/pre/head/cream1-1.pdf}
+            \includegraphics[height=.3\textheight]{images/pre/head/cream1-2.pdf}
+            \includegraphics[height=.3\textheight]{images/pre/head/cream1-3.pdf}
+            \includegraphics[height=.3\textheight]{images/pre/head/cream1-4.pdf}
+            \caption{}
+            \label{fig:lower_cream}
+        \end{figure}
+    \end{block}
+    \begin{block}{上层}
+        \begin{figure}[htbp]
+            \centering
+            \includegraphics[height=.2\textheight]{images/pre/head/cream2-1.pdf}
+            \includegraphics[height=.2\textheight]{images/pre/head/cream2-2.pdf}
+            \caption{}
+            \label{fig:upper_cream}
+        \end{figure}
+    \end{block}
+\end{frame}
+\begin{frame}
+    \frametitle{组合}
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[height=.75\textheight]{images/pre/head/cream.pdf}
+        \caption{奶油}
+        \label{fig:cream}
+    \end{figure}
+\end{frame}
 \subsection{糖果}
 \subsection{环境光照}
 \subsection{软阴影}

@@ -331,13 +331,18 @@ vec2 mapCandy(vec3 p, vec2 last){
 vec2 mapHead(vec3 p, vec3 bottom, vec2 last){
     vec3 q_top = rotateY(p, -p.y * 6);
     vec3 q_bot = rotateY(p, -p.y * 5);
+    // vec3 q_top = p;
+    // vec3 q_bot = p;
     // bottom cream
     vec3 offset_bot = vec3(0.1, -0.03, 0.3);
     int rep_bot = 7;
+    // int rep_bot = 1;
     float r_bot = 0.16,
           h_bot = 0.40,
           x_bot = -1,
           y_bot = PI/10;
+        //   x_bot = 0,
+        //   y_bot = 0;
     // top cream
     vec3 offset_top = vec3(0.06, -0.03, 0.3);
     int rep_top = 5;
@@ -345,10 +350,14 @@ vec2 mapHead(vec3 p, vec3 bottom, vec2 last){
           h_top = 0.60,
           x_top = -0.33,
           y_top = -PI/3;
+        //   x_top = 0,
+        //   y_top = 0;
 
-    float dist = mapCream(q_bot, bottom, offset_bot, rep_bot, x_bot, y_bot, r_bot, h_bot);
+    float dist = MAXDIST;
+    dist = min(dist, mapCream(q_bot, bottom, offset_bot, rep_bot, x_bot, y_bot, r_bot, h_bot));
     bottom += -h_bot * cos(x_bot) + vec3(0, 0.05, 0);
     dist = smin(dist, mapCream(q_top, bottom, offset_top, rep_top, x_top, y_top, r_top, h_top), 0.05);
+    // dist = min(dist, mapCream(q_top, bottom, offset_top, rep_top, x_top, y_top, r_top, h_top));
     vec2 ret = last;
     if(dist < ret.x){
         ret.x = smin(ret.x, dist, 0.01);
@@ -418,7 +427,8 @@ vec2 map(vec3 p){
     vec2 ret = vec2(sdPlane(p), MAT_GROUND);
     vec3 cone_top = vec3(0);
     ret = mapCone(p, cone_top, ret);
-    // ret = mapHead(p, cone_top, ret);
+    ret.x = min(MAXDIST, sdPlane(p));
+    ret = mapHead(p, cone_top, ret);
     // ret = mapCandy(p, ret);
     return ret;
 }
