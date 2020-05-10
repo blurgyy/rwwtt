@@ -4,11 +4,25 @@
 
 presentation 视频: [`https://blurgy.xyz/cg/pre.mp4`](https://blurgy.xyz/cg/pre.mp4)
 
+GitHub: [`https://github.com/Blurgyy/rwwtt`](https://github.com/Blurgyy/rwwtt)
+
 ![demo](images/demo.png)
+
+## 使用
+
+1. 在 `/shader` 目录下执行 `make all` 以编译顶点着色器和片段着色器 (需要安装 GLSL 编译器 `glslc` )
+2. 在根目录下执行
+
+```bash
+mkdir build && cd build
+cmake ..	# 需要 Vulkan 支持
+make		# 编译
+./rwwtt 	# 运行
+```
 
 ## 说明
 
-- 使用 Vulkan 直接传递两个覆盖整个屏幕的三角形给 Vertex shader. 渲染过程全部使用 GLSL 在 Fragment shader 中实现.
+- 使用 Vulkan 直接传递两个覆盖整个屏幕的三角形给 vertex shader. 渲染过程全部使用 GLSL 在 fragment shader 中实现.
 - 在 Fragment shader 中构造距离场, 然后使用 ray marching 方法渲染场景.
 - ray marching 中使用了 adaptive eps, 令固定的 epsilon 乘以当前点与起点之间的距离, 代表 ray marching 走得越远, 则判断与物体相交的条件越宽松.
 - 距离场中某一位置 p 的法线方向可以通过计算距离场的梯度方向来估计, 距离场的梯度方向是该点到场景中物体的距离变化最快的方向.
