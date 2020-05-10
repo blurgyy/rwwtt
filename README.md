@@ -1,6 +1,6 @@
 # Final Project: 用两个三角形渲染世界
 
-## 最终效果
+## 效果
 
 ![demo](images/demo.png)
 

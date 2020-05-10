@@ -11,7 +11,7 @@ const float MAXDIST = 1e8;
 const float EPS = 1e-5;
 const float PI = acos(-1.0);
 const float TWOPI = 2*acos(-1.0);
-const int AA = 1;
+const int AA = 2;
 
 #define MAT_CONE    0
 #define MAT_CREAM   1
@@ -396,9 +396,8 @@ vec2 mapCone(vec3 p, out vec3 newbase, vec2 last){
 
 vec2 map(vec3 p){
     vec2 ret = vec2(sdPlane(p), MAT_GROUND);
-    vec3 cone_top;
+    vec3 cone_top = vec3(0);
     ret = mapCone(p, cone_top, ret);
-    float dist = ret.x;
     ret = mapHead(p, cone_top, ret);
     ret = mapCandy(p, ret);
     return ret;
@@ -448,15 +447,15 @@ float softShadow(vec3 ro, vec3 rd, float tmin, float tmax){
         vec3 pos = ro + t * rd;
         float h = map(pos).x;
         // ret = min(ret, 10 * h / t);
-        if(h < tmin/10){
+        if(h < EPS){
             return 0;
         }
         float y = h*h/(2*prev_h);
         float d = sqrt(h*h - y*y);
-        ret = min( ret, 10*d/max(t-y,0) );
+        ret = min( ret, 32*d/max(t-y,0) );
         prev_h = h;
         t += h;
-        if(t > tmax || ret < 1e-4){
+        if(t > tmax || ret < EPS){
             break;
         }
     }
@@ -491,12 +490,12 @@ vec3 render(vec3 ro, vec3 rd){
         vec3 kd = materials[mat_id].kd;
         float pn = exp2(10*(1-materials[mat_id].rn));
 
-        // vec3 l = normalize(vec3(-1, -3, -5)); // parallel light rays
-        vec3 l = normalize(vec3(-4, -3, 1)); // parallel light rays
+        // vec3 l = normalize(vec3(-4, -3, 1)); // parallel light rays
+        vec3 l = normalize(vec3(-16, -12, 4)-p);
         vec3 h = normalize(l-rd);
 
         vec3 light = vec3(1.0, 0.7, 0.5)/1.2;
-        float diffuse = clamp(dot(n, l), 0, 1) * softShadow(p+n*EPS*10, l, 0.07, 3.0);
+        float diffuse = clamp(dot(n, l), 0, 1) * softShadow(p, l, 0.07, 5.0);
         float specular = pow(clamp(dot(h, n), 0, 1), pn) * diffuse;
 
         ret_color = (kd*diffuse + specular) * light;
@@ -530,7 +529,8 @@ void main(){
     vec2 uv = (gl_FragCoord.xy - .5 * passedInfo.res.xy) / passedInfo.res.y;
     vec3 color = vec3(0.);
 
-    // vec3 ro = vec3(2, -1.5, 2);
+    // vec3 ro = vec3(0.0, -1.5, 2-4*int(mod(passedInfo.time, 2) < 1));
+    // vec3 ro = vec3(-2, -1.5, 0.5);
     // vec3 ro = vec3(3*sin(0.7*length(passedInfo.mouse)*0.01),
     //                -1.5 + 0.3*sin(0.5*length(passedInfo.mouse)*0.01),
     //                2*cos(0.7*length(passedInfo.mouse)*0.01));
