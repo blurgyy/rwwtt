@@ -266,9 +266,109 @@
 \end{frame}
 
 \section{着色}
-\subsection{环境光照}
 \subsection{软阴影}
+\begin{frame}
+    \frametitle{软阴影估计}
+    \begin{itemize}
+        \item 在光线照亮点 p 的路径上:
+        \begin{itemize}
+            \item 物体距离路径越近, 阴影越黑
+            \item 该物体离 ray marching 的起点越远, 阴影越浅
+        \end{itemize}
+        \item 物体到起点的距离: \texttt{t}
+        \item 物体到 ray marching 路径的距离: \texttt{float h = mapIceCream(ro + t*rd);}
+        \item \texttt{k * h / t}
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{软阴影}
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[height=.75\textheight]{images/pre/softshadow.pdf}
+        \caption{软阴影}
+        \label{fig:softshadow}
+    \end{figure}
+\end{frame}
 \subsection{材质}
+\begin{frame}
+    \frametitle{材质}
+    \begin{itemize}
+        \item \texttt{Material\{vec3 color; float roughness\}}
+        \item \texttt{color}: 漫反射颜色
+        \begin{itemize}
+            \item \texttt{float diffuse = clamp(dot(n, l), 0, 1) * softShadow(p);}
+        \end{itemize}
+        \item \texttt{roughness}: 控制高光
+        \begin{itemize}
+            \item \texttt{float pn = exp2( 10*(1-roughness) );}
+            \item \texttt{float specular = pow(clamp(dot(h, n), 0, 1), pn) * diffuse;}
+        \end{itemize}
+        \item ray marching 过程中更新
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{添加材质}
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[height=.47\textheight]{images/pre/material/cone.pdf}
+        \includegraphics[height=.47\textheight]{images/pre/material/cream.pdf}
+        \includegraphics[height=.47\textheight]{images/pre/material/candies.pdf}
+        \caption{}
+        \label{fig:material_splitted}
+    \end{figure}
+\end{frame}
+\begin{frame}
+    \frametitle{组合}
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[height=.75\textheight]{images/pre/material/final.pdf}
+        \caption{}
+        \label{fig:material}
+    \end{figure}
+\end{frame}
+
+\subsection{环境光照}
+\begin{frame}
+    \frametitle{环境光遮蔽估计}
+    \begin{itemize}
+        \item 物体表面某点 texttt{p} 可能因为周围的复杂形状而接收到较少环境光照
+        \item 沿表面法线向外取若干个点 \texttt{q} (5 个), 根据 \texttt{q} 点到世界的距离 \texttt{d} 和 \texttt{q} 点到 \texttt{p} 点的距离 \texttt{h}, 估计出点 \texttt{p} 处的遮蔽系数 \texttt{occ}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{最后}
+    \begin{itemize}
+        \item 超采样反走样 (SSAA)
+    \end{itemize}
+\end{frame}
+
+\subsection{最终结果}
+\begin{frame}
+    \frametitle{最终结果}
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[height=.75\textheight]{images/pre/full.pdf}
+        \caption{最终结果}
+        \label{fig:final}
+    \end{figure}
+\end{frame}
+
+\section{参考资料}
+\begin{frame}
+    \frametitle{参考资料}
+    \begin{itemize}
+        \item Vulkan API: \url{https://vulkan-tutorial.com/}
+        \item ray marching 方法及技巧, 环境光遮蔽估计, 通过空间变换求得绕轴旋转的若干 primitive 等:
+        \begin{itemize}
+            \item \url{https://www.iquilezles.org/www/material/nvscene2008/rwwtt.pdf} 第 48 页
+            \item \url{https://www.youtube.com/watch?v=8sCLZcvC0Oo}
+        \end{itemize}
+        \item smooth blending: \url{https://iquilezles.org/www/articles/smin/smin.htm}
+        \item 修正的圆台距离场函数: \url{https://iquilezles.org/www/articles/distfunctions/distfunctions.htm}
+        \item 软阴影估计方式: \url{https://iquilezles.org/www/articles/rmshadows/rmshadows.htm}
+    \end{itemize}
+\end{frame}
 
 \begin{frame}
     \begin{center}

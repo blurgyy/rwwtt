@@ -11,35 +11,35 @@ const float MAXDIST = 1e8;
 const float EPS = 1e-5;
 const float PI = acos(-1.0);
 const float TWOPI = 2*acos(-1.0);
-const int AA = 1;
+const int AA = 2;
 
 #define DUMMY_MATERIAL 8
-// #define MAT_CONE    0
-// #define MAT_CREAM   1
-// #define MAT_GROUND  2
-// #define MAT_CANDY_1 3
-// #define MAT_CANDY_2 4
-// #define MAT_CANDY_3 5
-// #define MAT_CANDY_4 6
-// #define MAT_CANDY_5 7
-// #define MAT_CANDY_6 MAT_CANDY_4
-// #define MAT_CANDY_7 MAT_CANDY_1
-// #define MAT_CANDY_8 MAT_CANDY_2
-// #define MAT_CANDY_9 MAT_CANDY_5
-// #define MAT_CANDY_0 MAT_CANDY_3
-#define MAT_CONE    DUMMY_MATERIAL
-#define MAT_CREAM   DUMMY_MATERIAL
-#define MAT_GROUND  DUMMY_MATERIAL
-#define MAT_CANDY_1 DUMMY_MATERIAL
-#define MAT_CANDY_2 DUMMY_MATERIAL
-#define MAT_CANDY_3 DUMMY_MATERIAL
-#define MAT_CANDY_4 DUMMY_MATERIAL
-#define MAT_CANDY_5 DUMMY_MATERIAL
-#define MAT_CANDY_6 DUMMY_MATERIAL
-#define MAT_CANDY_7 DUMMY_MATERIAL
-#define MAT_CANDY_8 DUMMY_MATERIAL
-#define MAT_CANDY_9 DUMMY_MATERIAL
-#define MAT_CANDY_0 DUMMY_MATERIAL
+#define MAT_CONE    0
+#define MAT_CREAM   1
+#define MAT_GROUND  2
+#define MAT_CANDY_1 3
+#define MAT_CANDY_2 4
+#define MAT_CANDY_3 5
+#define MAT_CANDY_4 6
+#define MAT_CANDY_5 7
+#define MAT_CANDY_6 MAT_CANDY_4
+#define MAT_CANDY_7 MAT_CANDY_1
+#define MAT_CANDY_8 MAT_CANDY_2
+#define MAT_CANDY_9 MAT_CANDY_5
+#define MAT_CANDY_0 MAT_CANDY_3
+// #define MAT_CONE    DUMMY_MATERIAL
+// #define MAT_CREAM   DUMMY_MATERIAL
+// #define MAT_GROUND  DUMMY_MATERIAL
+// #define MAT_CANDY_1 DUMMY_MATERIAL
+// #define MAT_CANDY_2 DUMMY_MATERIAL
+// #define MAT_CANDY_3 DUMMY_MATERIAL
+// #define MAT_CANDY_4 DUMMY_MATERIAL
+// #define MAT_CANDY_5 DUMMY_MATERIAL
+// #define MAT_CANDY_6 DUMMY_MATERIAL
+// #define MAT_CANDY_7 DUMMY_MATERIAL
+// #define MAT_CANDY_8 DUMMY_MATERIAL
+// #define MAT_CANDY_9 DUMMY_MATERIAL
+// #define MAT_CANDY_0 DUMMY_MATERIAL
 #define CANDY_RN    0.65
 
 struct Material{
@@ -427,7 +427,8 @@ vec2 map(vec3 p){
     vec2 ret = vec2(sdPlane(p), MAT_GROUND);
     vec3 cone_top = vec3(0);
     ret = mapCone(p, cone_top, ret);
-    // ret.x = min(MAXDIST, sdPlane(p));
+    // ret.x = sdPlane(p);
+    // ret.y = MAT_GROUND;
     ret = mapHead(p, cone_top, ret);
     ret = mapCandy(p, ret);
     return ret;
@@ -480,10 +481,10 @@ float softShadow(vec3 ro, vec3 rd, float tmin, float tmax){
         if(h < EPS){
             return 0;
         }
-        {
-            t += h;
-            continue;
-        }
+        // {
+        //     t += h;
+        //     continue;
+        // }
         float y = h*h/(2*prev_h);
         float d = sqrt(h*h - y*y);
         ret = min( ret, 32*d/max(t-y,0) );
@@ -534,9 +535,9 @@ vec3 render(vec3 ro, vec3 rd){
 
         ret_color = (kd*diffuse + specular) * light;
 
-        // vec3 ambientLight = vec3(0.2, 0.1, 0.0);
+        vec3 ambientLight = vec3(0.2, 0.1, 0.0);
         // vec3 ambientLight = vec3(0.0, 0.1, 0.2);
-        vec3 ambientLight = vec3(0.0);
+        // vec3 ambientLight = vec3(0.0);
         float occ = ambientOcc(p, n);
         float AO = clamp(0.5 + 0.5 * n.y, 0, 1);
 

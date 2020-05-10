@@ -3,11 +3,11 @@ rwwtt = ../build/rwwtt
 
 .PHONY: all clean run test vader demo
 
-demo: demo.spv vert.spv ${rwwtt}
 all: icecream vert.spv ${rwwtt}
 clean:
 	-rm -f ${outputs}
 	cd ../build && ninja clean
+demo: demo.spv vert.spv ${rwwtt}
 run: ${rwwtt}
 	./${rwwtt}
 test: frag.spv
