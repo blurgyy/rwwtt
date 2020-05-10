@@ -11,13 +11,13 @@
 \setbeamertemplate{caption}{\raggedright\insertcaption\par}
 % \setbeamercovered{transparent}
 
-% \AtBeginSection[]
-% {
-% \begin{frame}
-%     \frametitle{}
-%     \tableofcontents[currentsection]
-% \end{frame}
-% }
+\AtBeginSection[]
+{
+\begin{frame}
+    \frametitle{}
+    \tableofcontents[currentsection]
+\end{frame}
+}
 % TODO: fill title here
 \title{Final project: 用两个三角形渲染世界}
 \author{张高阳}
@@ -56,10 +56,10 @@
 
 \begin{frame}
     \frametitle{基本思想}
-    \begin{itemize}[<+->]
-        \item 用两个直角三角形覆盖整个屏幕
-        \item 在片段着色器中构建距离场 (signed distance function, sdf) % 法线方向估计, 物体内部距离为负
-        \item 使用 ray march 方法逐像素渲染 % adaptive epsilon
+    \begin{itemize}
+        \item 用两个三角形覆盖整个屏幕
+        \item 在 fragment shader 中构建距离场 (signed distance function, sdf) % 法向量方向估计, 物体内部距离为负
+        \item 使用 ray marching 方法逐像素渲染 % adaptive epsilon
     \end{itemize}
     \begin{figure}[htbp]
         \centering
@@ -102,9 +102,9 @@
     \begin{columns}
     % \begin{column}{.1\textwidth}\end{column}
         \begin{column}{.6\textwidth}
-            \begin{itemize}[<+->]
-                \item 以 Y 轴为中心对称
-                \item \texttt{vec3 q = vec3(length(p.xz), p.y);}
+            \begin{itemize}
+                \item 以 $y$ 轴为中心对称
+                \item \texttt{vec2 q = vec2(length(p.xz), p.y);}
                 \item 梯形
             \end{itemize}
         \end{column}
@@ -123,8 +123,8 @@
     \begin{columns}
     % \begin{column}{.1\textwidth}\end{column}
         \begin{column}{.6\textwidth}
-            \begin{itemize}[<+->]
-                \item \texttt{vec3 q = vec3(length(p.xz), p.y);}
+            \begin{itemize}
+                \item \texttt{vec2 q = vec2(length(p.xz), p.y);}
                 \item 圆 (部分)
             \end{itemize}
         \end{column}
@@ -156,7 +156,7 @@
     \begin{figure}[htbp]
         \centering
         \includegraphics[height=.75\textheight]{images/pre/cone/final.pdf}
-        \caption{甜筒}
+        \caption{\texttt{mapCone(p)}}
         \label{fig:cone_model}
     \end{figure}
 \end{frame}
@@ -180,19 +180,22 @@
 \end{frame}
 \begin{frame}
     \frametitle{锥形}
-    \begin{itemize}[<+->]
-        \item 顶部半径为 0 的\underline{圆台}
-        \item \texttt{dist\_cone = CappedCone(h, EPS, r);}
+    \begin{itemize}
+        \item 顶部半径为 0 的\underline{圆台} \\
+        \texttt{dist\_cone = CappedCone(h, EPS, r);}
         \item 平滑边缘: \\
-        \texttt{dist\_cone = CappedCone(h, EPS, r) - corner;}
+        \texttt{dist\_cone = CappedCone(h-2*corner, EPS, r-corner) - corner;}
     \end{itemize}
 \end{frame}
 \begin{frame}
-    \frametitle{旋转重复}
-    \begin{itemize}[<+->]
+    \frametitle{重复和扭转}
+    \begin{itemize}
         \item 变换自身位置以求得不同的距离场
         \item \texttt{vec3 q = rotateY(p, TWOPI*i/rep);} \\ 
         \texttt{dist = min(dist, Cone(q, h, r));}
+        \item 根据 $y$ 轴坐标做不同程度的扭转 \\
+        \texttt{vec3 q = rotateY(p, -p.y * 6);} \\
+        \texttt{dist = min(dist, Cream(q));}
     \end{itemize}
 \end{frame}
 \begin{frame}
@@ -223,7 +226,7 @@
     \begin{figure}[htbp]
         \centering
         \includegraphics[height=.75\textheight]{images/pre/head/cream.pdf}
-        \caption{奶油}
+        \caption{\texttt{mapHead()}}
         \label{fig:cream}
     \end{figure}
 \end{frame}
@@ -237,7 +240,7 @@
 \end{frame}
 \begin{frame}
     \frametitle{旋转}
-    \begin{itemize}[<+->]
+    \begin{itemize}
         \item 随机初始方向
         \item 缓慢旋转
         \begin{itemize}
@@ -252,7 +255,7 @@
     \begin{figure}[htbp]
         \centering
         \includegraphics[height=.75\textheight]{images/pre/candies.pdf}
-        \caption{糖果}
+        \caption{\texttt{mapCandies()}}
         \label{fig:candies}
     \end{figure}
 \end{frame}
@@ -270,7 +273,7 @@
 \subsection{软阴影}
 \begin{frame}
     \frametitle{软阴影估计}
-    \begin{itemize}[<+->]
+    \begin{itemize}
         \item 在光线照亮点 p 的路径上:
         \begin{itemize}
             \item 物体距离路径越近, 阴影越黑
@@ -293,7 +296,7 @@
 \subsection{材质}
 \begin{frame}
     \frametitle{材质}
-    \begin{itemize}[<+->]
+    \begin{itemize}
         \item \texttt{Material\{vec3 color; float roughness\}}
         \item \texttt{color}: 漫反射颜色
         \begin{itemize}
@@ -301,7 +304,7 @@
         \end{itemize}
         \item \texttt{roughness}: 控制高光
         \begin{itemize}
-            \item \texttt{float pn = exp2( 10*(1-roughness) );}
+            \item \texttt{float pn = exp2(10 * (1-roughness));}
             \item \texttt{float specular = pow(clamp(dot(h, n), 0, 1), pn) * diffuse;}
         \end{itemize}
         \item ray marching 过程中更新
@@ -328,18 +331,12 @@
     \end{figure}
 \end{frame}
 
-\subsection{环境光照}
-\begin{frame}
-    \frametitle{环境光遮蔽估计}
-    \begin{itemize}[<+->]
-        \item 物体表面某点 \texttt{p} 可能因为周围的复杂形状而接收到较少环境光照
-        \item 沿表面法线向外取若干个点 \texttt{q} (5 个), 根据 \texttt{q} 点到世界的距离 \texttt{d} 和 \texttt{q} 点到 \texttt{p} 点的距离 \texttt{h}, 估计出点 \texttt{p} 处的遮蔽系数 \texttt{occ}.
-    \end{itemize}
-\end{frame}
-
+\subsection{最后}
 \begin{frame}
     \frametitle{最后}
     \begin{itemize}
+        \item 物体表面某点 \texttt{p} 可能因为周围的复杂形状而接收到较少环境光照
+        \item 沿表面法向量向外取若干个点 \texttt{q} (5 个), 根据 \texttt{q} 点到世界的距离 \texttt{d=map(q)} 和 \texttt{q} 点到 \texttt{p} 点的距离 \texttt{h}, 就可以估计出点 \texttt{p} 处的环境光遮蔽系数 \texttt{occ}.
         \item 反走样 (SSAA 2x)
     \end{itemize}
 \end{frame}
@@ -360,7 +357,7 @@
     \frametitle{参考资料}
     \begin{itemize}
         \item Vulkan API: \url{https://vulkan-tutorial.com/}
-        \item ray marching 方法及技巧, 环境光遮蔽估计, 通过空间变换求得绕轴旋转的若干 primitive 等:
+        \item ray marching 方法及技巧, 环境光遮蔽估计, 通过空间变换求得绕轴对称的若干 primitive 等:
         \begin{itemize}
             \item \url{https://www.iquilezles.org/www/material/nvscene2008/rwwtt.pdf} 第 48 页
             \item \url{https://www.youtube.com/watch?v=8sCLZcvC0Oo}
