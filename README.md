@@ -10,8 +10,8 @@ GitHub: [`https://github.com/Blurgyy/rwwtt`](https://github.com/Blurgyy/rwwtt)
 
 ## 使用
 
-1. 在 `/shader` 目录下执行 `make all` 以编译顶点着色器和片段着色器 (需要安装 GLSL 编译器 `glslc` )
-2. 在根目录下执行
+1. 在 `/shaders` 目录下执行 `make all` 以编译顶点着色器和片段着色器 (需要安装 GLSL 编译器 `glslc`)
+2. **得到编译出的 `/shaders/vert.spv` 和 `/shaders/icecream.spv` 之后**, 回到根目录下执行
 
 ```bash
 mkdir build && cd build
