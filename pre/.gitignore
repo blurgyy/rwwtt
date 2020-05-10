@@ -1,0 +1,23 @@
+*.pdf
+
+# tex outputs
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
+
+# # images
+# *.jpg
+# *.jpeg
+# *.png
+# *.bmp
+# *.eps
+
+# generated html
+*.html
+
+# cmake directory
+build/

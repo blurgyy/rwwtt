@@ -1,0 +1,153 @@
+\documentclass[aspectratio=169]{ctexbeamer} % normal mode:& for lecturing 
+% \documentclass[aspectratio=169, draft]{ctexbeamer} % draft mode:& to compile faster 
+% \documentclass[aspectratio=169, handout]{ctexbeamer} % handout mode:& when releasing slides 
+% \setbeamertemplate{footline}[frame number] % use this when releasing pdf
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{ulem}
+\usepackage{xcolor}
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+% \setbeamercovered{transparent}
+
+\AtBeginSection[]
+{
+\begin{frame}
+    \frametitle{}
+    \tableofcontents[currentsection]
+\end{frame}
+}
+% TODO: fill title here
+\title{Final project: 用两个三角形渲染世界}
+\author{张高阳}
+% \date{Feb 23 2020}
+
+\begin{document}
+\begin{frame}
+    \titlepage 
+\end{frame}
+
+\begin{frame}
+    \frametitle{简介}
+    \begin{columns}
+        \begin{column}{.1\textwidth}\end{column}
+        \begin{column}{.5\textwidth}
+            \begin{itemize}
+                \item 选题: \underline{2.4.2}: 用两个三角形渲染世界
+                \item 渲染物体: 冰淇淋 \texttt{emoji}
+            \end{itemize}
+        \end{column}
+        \begin{column}{.4\textwidth}
+            \includegraphics[width=32pt]{images/pre/emoji.pdf}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    \frametitle{效果}
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[height=.85\textheight]{images/pre/full.pdf}
+        \caption{}
+        \label{fig:full}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{基本思想}
+    \begin{itemize}
+        \item 用两个直角三角形覆盖整个屏幕
+        \item 在片段着色器中构建距离场 (signed distance function) % 法线方向估计, 物体内部距离为负
+        \item 使用 ray march 方法逐像素渲染 % adaptive epsilon
+    \end{itemize}
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[height=.5\textheight]{images/pre/iq_2tri.pdf}
+        \caption{\footnotesize 图片来自 \url{https://www.iquilezles.org/www/material/nvscene2008/rwwtt.pdf}}
+        \label{fig:iq_2tri}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{目录}
+    \tableofcontents
+\end{frame}
+
+% TODO: slides 
+%************************%
+% TODO: fill section (subsection, subsubsection) title here
+\section{实现过程}
+\subsection{甜筒}
+% \subsubsection*{}
+\begin{frame}
+    \frametitle{分解} % frame title
+    \begin{columns}
+    \begin{column}{.1\textwidth}\end{column}
+        \begin{column}{.4\textwidth}
+            \begin{itemize}
+                \item 圆台 $\times 2$
+                \item 碗形 $\times 1$
+                \item 环 $\times 3$
+                \item 竖线 $\times 7$
+            \end{itemize}
+        \end{column}
+        \begin{column}{.5\textwidth}
+            \includegraphics[width=64pt]{images/pre/emoji.pdf}
+        \end{column}
+    \end{columns}
+\end{frame}
+\begin{frame}
+    \frametitle{圆台} % frame title
+    \begin{columns}
+    % \begin{column}{.1\textwidth}\end{column}
+        \begin{column}{.6\textwidth}
+            \begin{itemize}
+                \item 以 Y 轴为中心对称
+                \item \texttt{vec3 q = vec3(length(p.xz), p.y)}
+                \item 梯形
+            \end{itemize}
+        \end{column}
+        \begin{column}{.4\textwidth}
+            \begin{figure}[htbp]
+                \centering
+                \includegraphics[height=.65\textheight]{images/pre/cone_derive.pdf}
+                \caption{圆台}
+                \label{fig:cone_derive}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
+\begin{frame}
+    \frametitle{碗形} % frame title
+    \begin{columns}
+    % \begin{column}{.1\textwidth}\end{column}
+        \begin{column}{.6\textwidth}
+            \begin{itemize}
+                \item \texttt{vec3 q = vec3(length(p.xz), p.y)}
+                \item 圆 (部分)
+            \end{itemize}
+        \end{column}
+        \begin{column}{.4\textwidth}
+            \begin{figure}[htbp]
+                \centering
+                \includegraphics[height=.65\textheight]{images/pre/bowl_derive.pdf}
+                \caption{碗形}
+                \label{fig:bowl_derive}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
+%************************%
+\subsection{奶油}
+\subsection{糖果}
+\subsection{环境光照}
+\subsection{软阴影}
+\subsection{材质}
+
+\begin{frame}
+    \begin{center}
+        \Huge{感谢观看!}
+    \end{center}
+\end{frame}
+
+\end{document}
