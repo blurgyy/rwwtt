@@ -427,9 +427,9 @@ vec2 map(vec3 p){
     vec2 ret = vec2(sdPlane(p), MAT_GROUND);
     vec3 cone_top = vec3(0);
     ret = mapCone(p, cone_top, ret);
-    ret.x = min(MAXDIST, sdPlane(p));
+    // ret.x = min(MAXDIST, sdPlane(p));
     ret = mapHead(p, cone_top, ret);
-    // ret = mapCandy(p, ret);
+    ret = mapCandy(p, ret);
     return ret;
 }
 

@@ -34,7 +34,7 @@
         \begin{column}{.5\textwidth}
             \begin{itemize}
                 \item 选题: \underline{2.4.2}: 用两个三角形渲染世界
-                \item 渲染物体: 冰淇淋 \texttt{emoji}
+                \item 冰淇淋 \texttt{emoji}
             \end{itemize}
         \end{column}
         \begin{column}{.4\textwidth}
@@ -76,7 +76,7 @@
 % TODO: slides 
 %************************%
 % TODO: fill section (subsection, subsubsection) title here
-\section{实现过程}
+\section{距离场}
 \subsection{甜筒}
 % \subsubsection*{}
 \begin{frame}
@@ -227,6 +227,45 @@
     \end{figure}
 \end{frame}
 \subsection{糖果}
+\begin{frame}
+    \frametitle{糖果}
+    \begin{itemize}
+        \item 立方体
+        \item 圆角
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{旋转}
+    \begin{itemize}
+        \item 随机初始方向
+        \item 缓慢旋转
+        \begin{itemize}
+            \item \texttt{float delta\_rot = 0.07*time + 0.05*sin(time);}
+            \item \texttt{vec3 q = inverse(rotateXYZ(ax+delta\_rot, ay, az)) * (p-center);}
+            \item \texttt{dist = Box(q, box\_shape);}
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{糖果}
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[height=.75\textheight]{images/pre/candies.pdf}
+        \caption{糖果}
+        \label{fig:candies}
+    \end{figure}
+\end{frame}
+\begin{frame}
+    \frametitle{组合}
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[height=.75\textheight]{images/pre/icecream_model.pdf}
+        \caption{\texttt{float dist = mapIceCream(p);}}
+        \label{fig:icecream_model}
+    \end{figure}
+\end{frame}
+
+\section{着色}
 \subsection{环境光照}
 \subsection{软阴影}
 \subsection{材质}
