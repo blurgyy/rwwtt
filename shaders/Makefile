@@ -1,8 +1,9 @@
 outputs = frag.spv vert.spv vader.spv icecream.spv
 rwwtt = ../build/rwwtt
 
-.PHONY: all clean run test vader
+.PHONY: all clean run test vader demo
 
+demo: demo.spv vert.spv ${rwwtt}
 all: icecream vert.spv ${rwwtt}
 clean:
 	-rm -f ${outputs}
@@ -21,5 +22,7 @@ vader.spv: vader.frag
 	glslc $< -O -o $@
 icecream.spv: icecream.frag
 	glslc $< -O -o $@
+demo.spv: demo.frag
+	glslc $< -O -o icecream.spv
 ${rwwtt}:
 	cd ../build && ninja
