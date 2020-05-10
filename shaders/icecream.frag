@@ -534,9 +534,9 @@ void main(){
     // vec3 ro = vec3(3*sin(0.7*length(passedInfo.mouse)*0.01),
     //                -1.5 + 0.3*sin(0.5*length(passedInfo.mouse)*0.01),
     //                2*cos(0.7*length(passedInfo.mouse)*0.01));
-    vec3 ro = vec3(2*sin(0.01*passedInfo.time),
-                   -1.5 + 0.005*sin(0.005*passedInfo.time),
-                   2*cos(0.01*passedInfo.time));
+    vec3 ro = vec3(3*sin(0.1*passedInfo.time),
+                   -1.5 + 0.5*sin(0.005*passedInfo.time),
+                   2*cos(0.1*passedInfo.time));
     vec3 ta = vec3(0, -0.5, 0);
     mat3 camRot = setCamera( ro, ta, 0.0 );
     // vec3 rd = camRot * normalize(vec3(uv.x, uv.y, 1));

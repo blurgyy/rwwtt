@@ -7,16 +7,17 @@
 \usepackage{graphicx}
 \usepackage{ulem}
 \usepackage{xcolor}
+\hypersetup{colorlinks}
 \setbeamertemplate{caption}{\raggedright\insertcaption\par}
 % \setbeamercovered{transparent}
 
-\AtBeginSection[]
-{
-\begin{frame}
-    \frametitle{}
-    \tableofcontents[currentsection]
-\end{frame}
-}
+% \AtBeginSection[]
+% {
+% \begin{frame}
+%     \frametitle{}
+%     \tableofcontents[currentsection]
+% \end{frame}
+% }
 % TODO: fill title here
 \title{Final project: 用两个三角形渲染世界}
 \author{张高阳}
@@ -47,17 +48,17 @@
     \frametitle{效果}
     \begin{figure}[htbp]
         \centering
-        \includegraphics[height=.85\textheight]{images/pre/full.pdf}
-        \caption{}
+        \includegraphics[height=.75\textheight]{images/pre/full.pdf}
+        \caption{\url{https://blurgy.xyz/cg/demo.mp4}}
         \label{fig:full}
     \end{figure}
 \end{frame}
 
 \begin{frame}
     \frametitle{基本思想}
-    \begin{itemize}
+    \begin{itemize}[<+->]
         \item 用两个直角三角形覆盖整个屏幕
-        \item 在片段着色器中构建距离场 (signed distance function) % 法线方向估计, 物体内部距离为负
+        \item 在片段着色器中构建距离场 (signed distance function, sdf) % 法线方向估计, 物体内部距离为负
         \item 使用 ray march 方法逐像素渲染 % adaptive epsilon
     \end{itemize}
     \begin{figure}[htbp]
@@ -80,7 +81,7 @@
 \subsection{甜筒}
 % \subsubsection*{}
 \begin{frame}
-    \frametitle{分解} % frame title
+    \frametitle{甜筒 - 分解} % frame title
     \begin{columns}
     \begin{column}{.1\textwidth}\end{column}
         \begin{column}{.4\textwidth}
@@ -101,7 +102,7 @@
     \begin{columns}
     % \begin{column}{.1\textwidth}\end{column}
         \begin{column}{.6\textwidth}
-            \begin{itemize}
+            \begin{itemize}[<+->]
                 \item 以 Y 轴为中心对称
                 \item \texttt{vec3 q = vec3(length(p.xz), p.y);}
                 \item 梯形
@@ -122,7 +123,7 @@
     \begin{columns}
     % \begin{column}{.1\textwidth}\end{column}
         \begin{column}{.6\textwidth}
-            \begin{itemize}
+            \begin{itemize}[<+->]
                 \item \texttt{vec3 q = vec3(length(p.xz), p.y);}
                 \item 圆 (部分)
             \end{itemize}
@@ -162,7 +163,7 @@
 %************************%
 \subsection{奶油}
 \begin{frame}
-    \frametitle{分解} % frame title
+    \frametitle{奶油 - 分解} % frame title
     \begin{columns}
     \begin{column}{.1\textwidth}\end{column}
         \begin{column}{.4\textwidth}
@@ -179,19 +180,19 @@
 \end{frame}
 \begin{frame}
     \frametitle{锥形}
-    \begin{itemize}
+    \begin{itemize}[<+->]
         \item 顶部半径为 0 的\underline{圆台}
         \item \texttt{dist\_cone = CappedCone(h, EPS, r);}
-        \item 平滑的角: \\
+        \item 平滑边缘: \\
         \texttt{dist\_cone = CappedCone(h, EPS, r) - corner;}
     \end{itemize}
 \end{frame}
 \begin{frame}
     \frametitle{旋转重复}
-    \begin{itemize}
+    \begin{itemize}[<+->]
         \item 变换自身位置以求得不同的距离场
-        \item \texttt{vec3 q = rotateY(p, TWOPI*i/rep);}
-        \item \texttt{dist = min(dist, Cone(q, h, r));}
+        \item \texttt{vec3 q = rotateY(p, TWOPI*i/rep);} \\ 
+        \texttt{dist = min(dist, Cone(q, h, r));}
     \end{itemize}
 \end{frame}
 \begin{frame}
@@ -236,7 +237,7 @@
 \end{frame}
 \begin{frame}
     \frametitle{旋转}
-    \begin{itemize}
+    \begin{itemize}[<+->]
         \item 随机初始方向
         \item 缓慢旋转
         \begin{itemize}
@@ -269,7 +270,7 @@
 \subsection{软阴影}
 \begin{frame}
     \frametitle{软阴影估计}
-    \begin{itemize}
+    \begin{itemize}[<+->]
         \item 在光线照亮点 p 的路径上:
         \begin{itemize}
             \item 物体距离路径越近, 阴影越黑
@@ -292,7 +293,7 @@
 \subsection{材质}
 \begin{frame}
     \frametitle{材质}
-    \begin{itemize}
+    \begin{itemize}[<+->]
         \item \texttt{Material\{vec3 color; float roughness\}}
         \item \texttt{color}: 漫反射颜色
         \begin{itemize}
@@ -330,8 +331,8 @@
 \subsection{环境光照}
 \begin{frame}
     \frametitle{环境光遮蔽估计}
-    \begin{itemize}
-        \item 物体表面某点 texttt{p} 可能因为周围的复杂形状而接收到较少环境光照
+    \begin{itemize}[<+->]
+        \item 物体表面某点 \texttt{p} 可能因为周围的复杂形状而接收到较少环境光照
         \item 沿表面法线向外取若干个点 \texttt{q} (5 个), 根据 \texttt{q} 点到世界的距离 \texttt{d} 和 \texttt{q} 点到 \texttt{p} 点的距离 \texttt{h}, 估计出点 \texttt{p} 处的遮蔽系数 \texttt{occ}.
     \end{itemize}
 \end{frame}
@@ -339,7 +340,7 @@
 \begin{frame}
     \frametitle{最后}
     \begin{itemize}
-        \item 超采样反走样 (SSAA)
+        \item 反走样 (SSAA 2x)
     \end{itemize}
 \end{frame}
 

@@ -17,8 +17,8 @@
 
 const int max_frames_in_flight = 2;
 
-const uint32_t window_width = 512;
-const uint32_t window_height = 512;
+const uint32_t window_width = 784;
+const uint32_t window_height = 441;
 
 const std::vector<const char*> validationLayers{
     "VK_LAYER_KHRONOS_validation"
