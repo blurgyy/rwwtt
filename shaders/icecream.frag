@@ -6,12 +6,12 @@ layout(binding = 0) uniform UniformBufferObject{
     vec2 mouse;
 } passedInfo;
 layout(location = 0) out vec4 outColor;
-const int MAXSTEPS = 100;
+const int MAXSTEPS = 128;
 const float MAXDIST = 1e8;
 const float EPS = 1e-5;
 const float PI = acos(-1.0);
 const float TWOPI = 2*acos(-1.0);
-const int AA = 2;
+const int AA = 1;
 
 #define MAT_CONE    0
 #define MAT_CREAM   1
@@ -228,10 +228,10 @@ vec2 mapCandy(vec3 p, vec2 last){
     vec3 cent7 = vec3(0.01, -0.94, 0.19);
     vec3 cent3 = vec3(-0.16, -0.9, 0.11);
     vec3 cent4 = vec3(-0.2, -0.84, -0.2);
-    // TODO: 3x floating candies
-    vec3 cent8 = vec3(0.5, -1, 0.866);
-    vec3 cent9 = vec3(-1.0, -0.8, 0.0);
-    vec3 cent0 = vec3(0.5, -1.2, -0.866);
+    // 3x floating candies
+    vec3 cent8 = vec3(0.5, -1, 0.866)    + vec3(0, 0.07*sin(0.15*passedInfo.time),  0);
+    vec3 cent9 = vec3(-1.0, -0.8, 0.0)   + vec3(0, 0.05*cos(0.13*passedInfo.time),  0);
+    vec3 cent0 = vec3(0.5, -1.2, -0.866) + vec3(0, 0.06*sin(0.17*passedInfo.time), 0);
 
     vec2 ret = last;
     float dist = MAXDIST;
@@ -285,22 +285,23 @@ vec2 mapCandy(vec3 p, vec2 last){
         ret.x = dist;
         ret.y = MAT_CANDY_7;
     }
-    // candy #8
-    q = inverse(rot3(75, 83, 60))*(p-cent8);
+    float delta_rot = 0.07*passedInfo.time+0.05*sin(passedInfo.time);
+    // floating candy #8
+    q = inverse(rot3(76+delta_rot, 29, 86))*(p-cent8);
     dist = min(dist, sdRoundBox(q, shape));
     if(dist < ret.x){
         ret.x = dist;
         ret.y = MAT_CANDY_8;
     }
-    // candy #9
-    q = inverse(rot3(75, 83, 60))*(p-cent9);
+    // floating candy #9
+    q = inverse(rot3(73, 46+delta_rot, 14))*(p-cent9);
     dist = min(dist, sdRoundBox(q, shape));
     if(dist < ret.x){
         ret.x = dist;
         ret.y = MAT_CANDY_9;
     }
-    // candy #0
-    q = inverse(rot3(75, 83, 60))*(p-cent0);
+    // floating candy #0
+    q = inverse(rot3(91, 63, 41+delta_rot))*(p-cent0);
     dist = min(dist, sdRoundBox(q, shape));
     if(dist < ret.x){
         ret.x = dist;
@@ -421,10 +422,11 @@ vec2 castRay(vec3 ro, vec3 rd){
         if(ret.x > tmax){
             break;
         }
-        float adaptive_eps = 1e-4 * ret.x; // !
+        float adaptive_eps = EPS * ret.x; // !
         vec3 pos = ro + ret.x * rd;
         vec2 delta = map(pos);
         if(delta.x < adaptive_eps){
+            ret.y = delta.y;
             break;
         }
         ret.x += delta.x;
@@ -532,9 +534,9 @@ void main(){
     // vec3 ro = vec3(3*sin(0.7*length(passedInfo.mouse)*0.01),
     //                -1.5 + 0.3*sin(0.5*length(passedInfo.mouse)*0.01),
     //                2*cos(0.7*length(passedInfo.mouse)*0.01));
-    vec3 ro = vec3(2*sin(0.2*passedInfo.time),
-                   -1.5 + 0.05*sin(0.5*passedInfo.time),
-                   2*cos(0.2*passedInfo.time));
+    vec3 ro = vec3(2*sin(0.01*passedInfo.time),
+                   -1.5 + 0.005*sin(0.005*passedInfo.time),
+                   2*cos(0.01*passedInfo.time));
     vec3 ta = vec3(0, -0.5, 0);
     mat3 camRot = setCamera( ro, ta, 0.0 );
     // vec3 rd = camRot * normalize(vec3(uv.x, uv.y, 1));
