@@ -177,7 +177,7 @@ float sdRoundBox(vec3 p, vec4 shape){
 
 float mapCream(vec3 p, vec3 bottom, vec3 offset,
                int rep, float angx, float angy, float r, float h){
-    // vec3 offset (in which offset.y is the radius of the round corner)
+    // vec3 offset (offset.y is also the radius of the round corner)
     // int rep, float angx, float angy, float r, float h
     float cosx = cos(angx), sinx = sin(angx);
     float cosy = cos(angy), siny = sin(angy);
@@ -193,12 +193,16 @@ float mapCream(vec3 p, vec3 bottom, vec3 offset,
     );
     mat3 invrot = inverse(roty * rotx);
     float corner = abs(offset.y);
-    float dist = MAXDIST;
+    float dist = MAXDIST*1.1;
     for(int i = 0; i < rep; ++ i){
         vec3 q = rotateY(p, TWOPI*i/rep);
         q = q - bottom - offset;
         q = invrot * q;
-        dist = smin(dist, sdRoundCone(q, r, h, corner), 0.01);
+        if(dist > MAXDIST){
+            dist = min(dist, sdRoundCone(q, r, h, corner));
+        } else {
+            dist = smin(dist, sdRoundCone(q, r, h, corner), 0.01);
+        }
     }
     return dist;
 }
