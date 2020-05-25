@@ -14,10 +14,10 @@ GitHub: [`https://github.com/Blurgyy/rwwtt`](https://github.com/Blurgyy/rwwtt)
 2. **得到编译出的 `/shaders/vert.spv` 和 `/shaders/icecream.spv` 之后**, 回到根目录下执行
 
 ```bash
-mkdir build && cd build
-cmake ..	# 需要 Vulkan 支持
-make		# 编译
-./rwwtt 	# 运行
+$ mkdir build && cd build
+$ cmake ..	# 需要 Vulkan 支持
+$ make		# 编译
+$ ./rwwtt 	# 运行
 ```
 
 ## 说明
